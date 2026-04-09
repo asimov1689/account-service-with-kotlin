@@ -7,10 +7,10 @@ import javax.validation.constraints.Pattern
 data class SignupRequest(
 
     @field:NotBlank(message = "Name must not be blank")
-    val name: String = "",
+    val name: String?,
 
     @field:NotBlank(message = "Last name must not be blank")
-    val lastname: String = "",
+    val lastname: String?,
 
     @field:NotBlank(message = "Email must not be blank")
     @field:Email(message = "Email format is invalid")
@@ -18,8 +18,8 @@ data class SignupRequest(
         regexp = "^[^@]+@acme\\.com$",
         message = "Email domain must be @acme.com"
     )
-    val email: String = "",
+    val email: String?,
 
     @field:NotBlank(message = "Password must not be blank")
-    val password: String = ""
+    val password: String?
 )

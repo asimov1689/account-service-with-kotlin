@@ -63,6 +63,7 @@
     <orderEntry type="library" name="Gradle: org.springframework.boot:spring-boot-starter:3.5.9" level="project" />
     <orderEntry type="library" name="Gradle: com.h2database:h2:2.3.232" level="project" />
     <orderEntry type="library" name="Gradle: javax.validation:validation-api:2.0.1.Final" level="project" />
+    <orderEntry type="library" name="Gradle: javax.servlet:javax.servlet-api:4.0.1" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Gradle: org.springframework.boot:spring-boot-actuator-autoconfigure:3.5.9" level="project" />
     <orderEntry type="library" name="Gradle: io.micrometer:micrometer-jakarta9:1.15.7" level="project" />
