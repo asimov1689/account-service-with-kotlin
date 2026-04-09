@@ -21,9 +21,9 @@ class AuthController {
     ): ResponseEntity<SignupResponse> {
 
         val response = SignupResponse(
-            name = request.name,
-            lastname = request.lastname,
-            email = request.email
+            name = request.name ?: "",
+            lastname = request.lastname ?: "",
+            email = request.email ?: ""
         )
 
         return ResponseEntity.ok(response)

@@ -20,6 +20,12 @@ files:
   - name: src/account/controller/AuthController.kt
     visible: true
     learner_created: true
+  - name: src/account/exception/GlobalExceptionHandler.kt
+    visible: true
+    learner_created: true
+  - name: src/account/dto/ErrorResponse.kt
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1861/implement#comment
 status: Unchecked
 record: -1
