@@ -1,0 +1,17 @@
+type: edu
+files:
+  - name: src/account/AccountServiceApplication.kt
+    visible: true
+    learner_created: false
+  - name: src/resources/application.properties
+    visible: true
+    learner_created: false
+  - name: build.gradle
+    visible: true
+    learner_created: false
+  - name: test/AccountServiceTest.java
+    visible: true
+    learner_created: false
+feedback_link: https://hyperskill.org/projects/332/stages/1867/implement#comment
+status: Unchecked
+record: -1
