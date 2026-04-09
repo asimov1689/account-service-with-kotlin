@@ -29,6 +29,9 @@ files:
   - name: test/account/unit/SignupValidationUnitTest.kt
     visible: true
     learner_created: true
+  - name: test/account/integration/AuthControllerIntegrationTest.kt
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1861/implement#comment
 status: Solved
 feedback:

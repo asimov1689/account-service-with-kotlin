@@ -11,6 +11,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Account Service (Kotlin)/task" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/build/classes/java" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/build/classes/kotlin" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/build/generated/sources/annotationProcessor/java" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/build/generated/sources/headers/java" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/build/reports/tests" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/build/test-results" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/build/tmp" />
+            <option value="$PROJECT_DIR$/Account Service (Kotlin)/task/out" />
             <option value="$PROJECT_DIR$/util" />
           </set>
         </option>

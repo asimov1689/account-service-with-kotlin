@@ -2,7 +2,6 @@ package account.unit
 
 import account.controller.AuthController
 import account.dto.SignupRequest
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

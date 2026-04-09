@@ -45,7 +45,7 @@ class AuthController {
         )
     }
 
-    private fun validate(request: SignupRequest): List<String> {
+    internal fun validate(request: SignupRequest): List<String> {
         val errors = mutableListOf<String>()
 
         if (request.name.isNullOrBlank())
