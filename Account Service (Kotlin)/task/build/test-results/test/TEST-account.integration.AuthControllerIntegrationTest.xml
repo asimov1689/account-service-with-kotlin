@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="account.integration.AuthControllerIntegrationTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-04-09T16:04:29.909Z" hostname="Olivers-MacBook-Pro-2.local" time="0.656">
+  <properties/>
+  <testcase name="given DELETE request when hitting signup endpoint then returns 405 method not allowed()" classname="account.integration.AuthControllerIntegrationTest" time="0.538"/>
+  <testcase name="given blank name when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.05"/>
+  <testcase name="given PUT request when hitting signup endpoint then returns 405 method not allowed()" classname="account.integration.AuthControllerIntegrationTest" time="0.006"/>
+  <testcase name="given missing password when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.008"/>
+  <testcase name="given email without at symbol when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.006"/>
+  <testcase name="given missing name when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.008"/>
+  <testcase name="given non acme email domain when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.005"/>
+  <testcase name="given valid signup request when POST signup then returns 200 with user details()" classname="account.integration.AuthControllerIntegrationTest" time="0.007"/>
+  <testcase name="given blank lastname when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.004"/>
+  <testcase name="given GET request when hitting signup endpoint then returns 405 method not allowed()" classname="account.integration.AuthControllerIntegrationTest" time="0.005"/>
+  <testcase name="given blank email when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.004"/>
+  <testcase name="given blank password when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.004"/>
+  <testcase name="given missing lastname when POST signup then returns 400 bad request()" classname="account.integration.AuthControllerIntegrationTest" time="0.004"/>
+  <system-out><![CDATA[18:04:28.611 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [account.integration.AuthControllerIntegrationTest]: AuthControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:04:28.676 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration account.AccountServiceApplication for test class account.integration.AuthControllerIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.9)
+
+2026-04-09T18:04:28.869+02:00  INFO 63369 --- [    Test worker] a.i.AuthControllerIntegrationTest        : Starting AuthControllerIntegrationTest using Java 23.0.2 with PID 63369 (started by oliverjaramillo in /Users/oliverjaramillo/Local Documents/Hyperskill/Account Service (Kotlin)/Account Service (Kotlin)/task)
+2026-04-09T18:04:28.870+02:00 DEBUG 63369 --- [    Test worker] a.i.AuthControllerIntegrationTest        : Running with Spring Boot v3.5.9, Spring v6.2.15
+2026-04-09T18:04:28.870+02:00  INFO 63369 --- [    Test worker] a.i.AuthControllerIntegrationTest        : No active profile set, falling back to 1 default profile: "default"
+2026-04-09T18:04:28.877+02:00 DEBUG 63369 --- [    Test worker] o.s.w.c.s.GenericWebApplicationContext   : Refreshing org.springframework.web.context.support.GenericWebApplicationContext@105b693d
+2026-04-09T18:04:29.598+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : 3 mappings in 'requestMappingHandlerMapping'
+2026-04-09T18:04:29.630+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2026-04-09T18:04:29.641+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2026-04-09T18:04:29.661+02:00 DEBUG 63369 --- [    Test worker] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+2026-04-09T18:04:29.816+02:00 DEBUG 63369 --- [    Test worker] o.s.w.f.ServerHttpObservationFilter      : Filter 'webMvcObservationFilter' configured for use
+2026-04-09T18:04:29.816+02:00  INFO 63369 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-04-09T18:04:29.816+02:00  INFO 63369 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-09T18:04:29.821+02:00  INFO 63369 --- [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 14 endpoints beneath base path '/actuator'
+2026-04-09T18:04:29.829+02:00  INFO 63369 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 13 ms
+2026-04-09T18:04:29.859+02:00  INFO 63369 --- [    Test worker] a.i.AuthControllerIntegrationTest        : Started AuthControllerIntegrationTest in 1.122 seconds (process running for 1.748)
+2026-04-09T18:04:30.357+02:00 DEBUG 63369 --- [    Test worker] .m.m.a.ExceptionHandlerExceptionResolver : Using @ExceptionHandler account.exception.GlobalExceptionHandler#handleMethodNotAllowed(HttpRequestMethodNotSupportedException, HttpServletRequest)
+2026-04-09T18:04:30.428+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.430+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.404978, status=405, error=Method Not Allowed, message=Me (truncated)...]
+2026-04-09T18:04:30.436+02:00 DEBUG 63369 --- [    Test worker] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'DELETE' is not supported]
+2026-04-09T18:04:30.452+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.472+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=, lastname=Doe, email=johndoe@acme.com, password=secret)]
+2026-04-09T18:04:30.480+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.481+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.480265, status=400, error=Bad Request, message=Name must (truncated)...]
+2026-04-09T18:04:30.502+02:00 DEBUG 63369 --- [    Test worker] .m.m.a.ExceptionHandlerExceptionResolver : Using @ExceptionHandler account.exception.GlobalExceptionHandler#handleMethodNotAllowed(HttpRequestMethodNotSupportedException, HttpServletRequest)
+2026-04-09T18:04:30.502+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.503+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.502781, status=405, error=Method Not Allowed, message=Me (truncated)...]
+2026-04-09T18:04:30.503+02:00 DEBUG 63369 --- [    Test worker] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'PUT' is not supported]
+2026-04-09T18:04:30.510+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.510+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=Doe, email=johndoe@acme.com, password=null)]
+2026-04-09T18:04:30.511+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.511+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.511068, status=400, error=Bad Request, message=Password  (truncated)...]
+2026-04-09T18:04:30.516+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.516+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=Doe, email=johndoeacme.com, password=secret)]
+2026-04-09T18:04:30.517+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.517+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.517163, status=400, error=Bad Request, message=Email dom (truncated)...]
+2026-04-09T18:04:30.525+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.525+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=null, lastname=Doe, email=johndoe@acme.com, password=secret)]
+2026-04-09T18:04:30.526+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.526+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.526126, status=400, error=Bad Request, message=Name must (truncated)...]
+2026-04-09T18:04:30.530+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.531+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=Doe, email=johndoe@google.com, password=secret)]
+2026-04-09T18:04:30.532+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.532+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.531915, status=400, error=Bad Request, message=Email dom (truncated)...]
+2026-04-09T18:04:30.536+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.537+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=Doe, email=johndoe@acme.com, password=secret)]
+2026-04-09T18:04:30.539+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.539+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [SignupResponse(name=John, lastname=Doe, email=johndoe@acme.com)]
+2026-04-09T18:04:30.543+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.544+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=, email=johndoe@acme.com, password=secret)]
+2026-04-09T18:04:30.544+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.544+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.544668, status=400, error=Bad Request, message=Last name (truncated)...]
+2026-04-09T18:04:30.549+02:00 DEBUG 63369 --- [    Test worker] .m.m.a.ExceptionHandlerExceptionResolver : Using @ExceptionHandler account.exception.GlobalExceptionHandler#handleMethodNotAllowed(HttpRequestMethodNotSupportedException, HttpServletRequest)
+2026-04-09T18:04:30.549+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.549+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.549428, status=405, error=Method Not Allowed, message=Me (truncated)...]
+2026-04-09T18:04:30.549+02:00 DEBUG 63369 --- [    Test worker] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' is not supported]
+2026-04-09T18:04:30.553+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.553+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=Doe, email=, password=secret)]
+2026-04-09T18:04:30.554+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.554+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.554050, status=400, error=Bad Request, message=Email mus (truncated)...]
+2026-04-09T18:04:30.558+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.558+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=Doe, email=johndoe@acme.com, password=)]
+2026-04-09T18:04:30.559+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.559+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.559039, status=400, error=Bad Request, message=Password  (truncated)...]
+2026-04-09T18:04:30.563+02:00 DEBUG 63369 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to account.controller.AuthController#signup(SignupRequest, HttpServletRequest)
+2026-04-09T18:04:30.563+02:00 DEBUG 63369 --- [    Test worker] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [SignupRequest(name=John, lastname=null, email=johndoe@acme.com, password=secret)]
+2026-04-09T18:04:30.564+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-04-09T18:04:30.564+02:00 DEBUG 63369 --- [    Test worker] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [ErrorResponse(timestamp=2026-04-09T18:04:30.564065, status=400, error=Bad Request, message=Last name (truncated)...]
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/oliverjaramillo/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.17.8/f09415827a71be7ed621c7bd02550678f28bc81c/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>
