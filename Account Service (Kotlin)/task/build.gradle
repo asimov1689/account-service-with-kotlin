@@ -26,6 +26,10 @@ repositories {
 
 sourceSets.main.resources.srcDirs = ["src/resources"]
 
+sourceSets {
+    test.kotlin.srcDirs += ['test']
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -38,8 +42,10 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
+
 test {
     jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+    useJUnitPlatform()
 }
 
 tasks.withType(KotlinCompile) {
