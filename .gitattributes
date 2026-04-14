@@ -1,17 +1,20 @@
-# Exclude build scripts and generated files from language statistics
+# Exclude everything by default from language statistics
+* linguist-vendored
+
+# Keep only Kotlin and Java as source languages
+*.kt linguist-language=Kotlin
+*.kt -linguist-vendored
+*.java linguist-language=Java
+*.java -linguist-vendored
+
+# Exclude build scripts and generated files explicitly if needed
 *.sh linguist-vendored
 *.bat linguist-vendored
 gradlew linguist-vendored
 gradlew.bat linguist-vendored
-
-# Exclude documentation and build-related files
 build/ linguist-vendored
 .gradle/ linguist-vendored
 *.html linguist-documentation
 *.css linguist-vendored
 *.js linguist-vendored
-
-# Keep only Kotlin and Java as source languages
-*.kt linguist-language=Kotlin
-*.java linguist-language=Java
 
