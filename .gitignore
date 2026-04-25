@@ -1,0 +1,83 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Build
+build/
+out/
+dist/
+target/
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+gradlew
+gradlew.bat
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# Kotlin
+*.kexe
+*.kt.bak
+*.kotlin_module
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Databases
+*.db
+*.mv.db
+*.trace.db
+*.log
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Sensitive files (NEVER commit these)
+*.env
+.env
+.env.local
+.env.*.local
+application-local.properties
+application-prod.properties
+*.key
+*.pem
+secrets/
+private/
+credentials.json
+
+# Test coverage
+coverage/
+jacoco.xml
+
+# Temporary files
+*.tmp
+*.temp
+.project
+.classpath
+
