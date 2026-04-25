@@ -14,10 +14,8 @@ target/
 # Gradle
 .gradle/
 gradle-app.setting
-!gradle-wrapper.jar
-!gradle-wrapper.properties
-gradlew
-gradlew.bat
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 # Java
 *.class
@@ -26,6 +24,7 @@ gradlew.bat
 *.ear
 *.zip
 *.tar.gz
+!gradle/wrapper/gradle-wrapper.jar
 
 # Kotlin
 *.kexe
@@ -80,4 +79,3 @@ jacoco.xml
 *.temp
 .project
 .classpath
-
