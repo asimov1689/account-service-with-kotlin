@@ -62,12 +62,6 @@ class AuthController {
 
         if (request.password.isNullOrBlank()) {
             errors.add("Password must not be blank")
-        } else if (request.password.length < 8) {
-            errors.add("Password must be at least 8 characters long")
-        } else if (!request.password.matches(Regex(".*[A-Z].*"))) {
-            errors.add("Password must contain at least one uppercase letter")
-        } else if (!request.password.matches(Regex(".*\\d.*"))) {
-            errors.add("Password must contain at least one digit")
         }
 
         return errors
