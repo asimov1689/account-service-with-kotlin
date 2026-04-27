@@ -12,6 +12,23 @@ import jakarta.servlet.http.HttpServletRequest
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
+    @ExceptionHandler(UserExistException::class)
+    fun handleUserExist(
+        ex: UserExistException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse(
+                timestamp = LocalDateTime.now(),
+                status = HttpStatus.BAD_REQUEST.value(),
+                error = "Bad Request",
+                message = "User exist!",
+                path = request.requestURI
+            ),
+            HttpStatus.BAD_REQUEST
+        )
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
     fun handleMethodNotAllowed(
         ex: HttpRequestMethodNotSupportedException,

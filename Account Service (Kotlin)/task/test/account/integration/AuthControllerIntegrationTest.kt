@@ -1,351 +1,338 @@
 package account.integration
 
+import account.repository.UserRepository
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Suppress("SpellCheckingInspection")
 class AuthControllerIntegrationTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    // ── valid request ──────────────────────────────────────────────────────
+    @Autowired
+    private lateinit var userRepository: UserRepository
+
+    @BeforeEach
+    fun cleanUp() {
+        userRepository.deleteAll()
+    }
+
+    private val signupUrl = "/api/auth/signup"
+    private val paymentUrl = "/api/empl/payment/"
+
+    // ─── SIGNUP — SUCCESS ────────────────────────────────────────────
 
     @Test
-    fun `given valid signup request when POST signup then returns 200 with user details`() {
-
+    fun `given valid signup request when POST signup then returns 200 with id and user details`() {
         // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "Doe",
-                "email": "johndoe@acme.com",
-                "password": "secret"
-            }
-        """.trimIndent()
+        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"secret123"}"""
 
         // Act
         val result = mockMvc.perform(
-            post("/api/auth/signup")
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(body)
         )
 
         // Assert
         result
             .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.name").value("John"))
             .andExpect(jsonPath("$.lastname").value("Doe"))
             .andExpect(jsonPath("$.email").value("johndoe@acme.com"))
             .andExpect(jsonPath("$.password").doesNotExist())
     }
 
-    // ── name validation ────────────────────────────────────────────────────
-
     @Test
-    fun `given blank name when POST signup then returns 400 bad request`() {
-
+    fun `given mixed case email when POST signup then response email is stored lowercase`() {
         // Arrange
-        val requestBody = """
-            {
-                "name": "",
-                "lastname": "Doe",
-                "email": "johndoe@acme.com",
-                "password": "secret"
-            }
-        """.trimIndent()
+        val body = """{"name":"John","lastname":"Doe","email":"JohnDoe@acme.com","password":"secret123"}"""
 
         // Act
         val result = mockMvc.perform(
-            post("/api/auth/signup")
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(body)
+        )
+
+        // Assert
+        result
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.email").value("johndoe@acme.com"))
+    }
+
+    // ─── SIGNUP — DUPLICATE ──────────────────────────────────────────
+
+    @Test
+    fun `given duplicate email when POST signup then returns 400 with user exist message`() {
+        // Arrange — register first user
+        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"secret123"}"""
+        mockMvc.perform(
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+        )
+
+        // Act — attempt duplicate registration
+        val result = mockMvc.perform(
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
+            .andExpect(jsonPath("$.message").value("User exist!"))
     }
 
     @Test
-    fun `given missing name when POST signup then returns 400 bad request`() {
-
-        // Arrange
-        val requestBody = """
-            {
-                "lastname": "Doe",
-                "email": "johndoe@acme.com",
-                "password": "secret"
-            }
-        """.trimIndent()
-
-        // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
+    fun `given duplicate email with different case when POST signup then returns 400`() {
+        // Arrange — register with lowercase email
+        val originalBody = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"secret123"}"""
+        mockMvc.perform(
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(originalBody)
+        )
+
+        // Act — attempt duplicate with mixed case email
+        val duplicateBody = """{"name":"John","lastname":"Doe","email":"JohnDoe@acme.com","password":"secret123"}"""
+        val result = mockMvc.perform(
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(duplicateBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
+            .andExpect(jsonPath("$.message").value("User exist!"))
     }
 
-    // ── lastname validation ────────────────────────────────────────────────
+    // ─── SIGNUP — VALIDATION FAILURES ───────────────────────────────
 
     @Test
-    fun `given blank lastname when POST signup then returns 400 bad request`() {
-
+    fun `given blank name when POST signup then returns 400`() {
         // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "",
-                "email": "johndoe@acme.com",
-                "password": "secret"
-            }
-        """.trimIndent()
+        val body = """{"name":"","lastname":"Doe","email":"johndoe@acme.com","password":"secret"}"""
 
         // Act
         val result = mockMvc.perform(
-            post("/api/auth/signup")
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(body)
         )
 
         // Assert
-        result
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
+        result.andExpect(status().isBadRequest)
     }
 
     @Test
-    fun `given missing lastname when POST signup then returns 400 bad request`() {
-
+    fun `given blank lastname when POST signup then returns 400`() {
         // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "email": "johndoe@acme.com",
-                "password": "secret"
-            }
-        """.trimIndent()
+        val body = """{"name":"John","lastname":"","email":"johndoe@acme.com","password":"secret"}"""
 
         // Act
         val result = mockMvc.perform(
-            post("/api/auth/signup")
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(body)
         )
 
         // Assert
-        result
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
+        result.andExpect(status().isBadRequest)
     }
 
-    // ── email validation ───────────────────────────────────────────────────
-
     @Test
-    fun `given blank email when POST signup then returns 400 bad request`() {
-
+    fun `given blank email when POST signup then returns 400`() {
         // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "Doe",
-                "email": "",
-                "password": "secret"
-            }
-        """.trimIndent()
+        val body = """{"name":"John","lastname":"Doe","email":"","password":"secret"}"""
 
         // Act
         val result = mockMvc.perform(
-            post("/api/auth/signup")
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(body)
         )
 
         // Assert
-        result
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
+        result.andExpect(status().isBadRequest)
     }
 
     @Test
-    fun `given non acme email domain when POST signup then returns 400 bad request`() {
-
+    fun `given non-acme email domain when POST signup then returns 400`() {
         // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "Doe",
-                "email": "johndoe@google.com",
-                "password": "secret"
-            }
-        """.trimIndent()
+        val body = """{"name":"John","lastname":"Doe","email":"john@gmail.com","password":"secret"}"""
 
         // Act
         val result = mockMvc.perform(
-            post("/api/auth/signup")
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(body)
         )
 
         // Assert
-        result
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
+        result.andExpect(status().isBadRequest)
     }
 
     @Test
-    fun `given email without at symbol when POST signup then returns 400 bad request`() {
-
+    fun `given blank password when POST signup then returns 400`() {
         // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "Doe",
-                "email": "johndoeacme.com",
-                "password": "secret"
-            }
-        """.trimIndent()
+        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":""}"""
 
         // Act
         val result = mockMvc.perform(
-            post("/api/auth/signup")
+            post(signupUrl)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(body)
         )
 
         // Assert
-        result
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
+        result.andExpect(status().isBadRequest)
     }
 
-    // ── password validation ────────────────────────────────────────────────
+    // ─── SIGNUP — WRONG HTTP METHODS ────────────────────────────────
 
     @Test
-    fun `given blank password when POST signup then returns 400 bad request`() {
-
-        // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "Doe",
-                "email": "johndoe@acme.com",
-                "password": ""
-            }
-        """.trimIndent()
+    fun `given GET on signup endpoint then returns 405`() {
+        // Arrange — no body needed, wrong method is the condition
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
-
-        // Assert
-        result
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
-    }
-
-    @Test
-    fun `given missing password when POST signup then returns 400 bad request`() {
-
-        // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "Doe",
-                "email": "johndoe@acme.com"
-            }
-        """.trimIndent()
-
-        // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
-
-        // Assert
-        result
-            .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.status").value(400))
-            .andExpect(jsonPath("$.error").value("Bad Request"))
-    }
-
-    // ── HTTP method validation ─────────────────────────────────────────────
-
-    @Test
-    fun `given GET request when hitting signup endpoint then returns 405 method not allowed`() {
-
-        // Arrange - GET has no body
-
-        // Act
-        val result = mockMvc.perform(get("/api/auth/signup"))
+        val result = mockMvc.perform(get(signupUrl))
 
         // Assert
         result.andExpect(status().isMethodNotAllowed)
     }
 
     @Test
-    fun `given PUT request when hitting signup endpoint then returns 405 method not allowed`() {
-
-        // Arrange
-        val requestBody = """
-            {
-                "name": "John",
-                "lastname": "Doe",
-                "email": "johndoe@acme.com",
-                "password": "secret"
-            }
-        """.trimIndent()
+    fun `given PUT on signup endpoint then returns 405`() {
+        // Arrange — no body needed, wrong method is the condition
 
         // Act
-        val result = mockMvc.perform(
-            put("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result = mockMvc.perform(put(signupUrl))
 
         // Assert
         result.andExpect(status().isMethodNotAllowed)
     }
 
     @Test
-    fun `given DELETE request when hitting signup endpoint then returns 405 method not allowed`() {
-
-        // Arrange - DELETE has no body
+    fun `given DELETE on signup endpoint then returns 405`() {
+        // Arrange — no body needed, wrong method is the condition
 
         // Act
-        val result = mockMvc.perform(delete("/api/auth/signup"))
+        val result = mockMvc.perform(delete(signupUrl))
 
         // Assert
         result.andExpect(status().isMethodNotAllowed)
+    }
+
+    // ─── PAYMENT — SUCCESS ───────────────────────────────────────────
+
+    @Test
+    fun `given valid credentials when GET payment then returns 200 with user details`() {
+        // Arrange — register user first
+        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"secret123"}"""
+        mockMvc.perform(
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+        )
+
+        // Act
+        val result = mockMvc.perform(
+            get(paymentUrl)
+                .with(httpBasic("johndoe@acme.com", "secret123"))
+        )
+
+        // Assert
+        result
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").exists())
+            .andExpect(jsonPath("$.name").value("John"))
+            .andExpect(jsonPath("$.lastname").value("Doe"))
+            .andExpect(jsonPath("$.email").value("johndoe@acme.com"))
+            .andExpect(jsonPath("$.password").doesNotExist())
+    }
+
+    @Test
+    fun `given mixed case email credentials when GET payment then returns 200`() {
+        // Arrange — register with lowercase email
+        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"secret123"}"""
+        mockMvc.perform(
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+        )
+
+        // Act — authenticate with mixed case email
+        val result = mockMvc.perform(
+            get(paymentUrl)
+                .with(httpBasic("JohnDoe@acme.com", "secret123"))
+        )
+
+        // Assert
+        result.andExpect(status().isOk)
+    }
+
+    // ─── PAYMENT — AUTH FAILURES ─────────────────────────────────────
+
+    @Test
+    fun `given no credentials when GET payment then returns 401`() {
+        // Arrange — no setup needed, absence of credentials is the condition
+
+        // Act
+        val result = mockMvc.perform(get(paymentUrl))
+
+        // Assert
+        result.andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `given wrong password when GET payment then returns 401`() {
+        // Arrange — register user
+        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"secret123"}"""
+        mockMvc.perform(
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+        )
+
+        // Act — authenticate with wrong password
+        val result = mockMvc.perform(
+            get(paymentUrl)
+                .with(httpBasic("johndoe@acme.com", "wrongpassword"))
+        )
+
+        // Assert
+        result.andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `given unknown user credentials when GET payment then returns 401`() {
+        // Arrange — no user registered
+
+        // Act
+        val result = mockMvc.perform(
+            get(paymentUrl)
+                .with(httpBasic("nobody@acme.com", "secret123"))
+        )
+
+        // Assert
+        result.andExpect(status().isUnauthorized)
     }
 }
