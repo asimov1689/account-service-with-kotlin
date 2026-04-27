@@ -10,7 +10,7 @@ stages:
     is_completed: true
   - id: 1862
     step: 27097
-    is_completed: false
+    is_completed: true
   - id: 1863
     step: 27098
     is_completed: false
@@ -19,7 +19,7 @@ stages:
     is_completed: false
   - id: 1865
     step: 27100
-    is_completed: false
+    is_completed: true
   - id: 1866
     step: 27101
     is_completed: false
@@ -62,6 +62,8 @@ topics:
       theory_id: 7834
     - title: Postman
       theory_id: 8512
+    - title: "How the web works: clients, servers, and browsers"
+      theory_id: 52811
     - title: Bean validation
       theory_id: 9355
     - title: Introduction to Kotlin
