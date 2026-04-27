@@ -79,3 +79,4 @@ jacoco.xml
 *.temp
 .project
 .classpath
+.ai/
