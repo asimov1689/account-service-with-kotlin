@@ -12,16 +12,6 @@ summary: "<p>Companies send out payrolls to employees using corporate mail. This
 programming_language: Kotlin
 content:
   - Account Service (Kotlin)
-additional_files:
-  - name: build.gradle
-    visible: true
-  - name: settings.gradle
-    visible: true
-  - name: Account Service (Kotlin)/service_db.mv.db
-    visible: true
-    is_binary: true
-  - name: Account Service (Kotlin)/service_db.trace.db
-    visible: true
-    is_binary: true
+additional_files: [ ]
 mode: Study
 yaml_version: 5
