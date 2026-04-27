@@ -3,6 +3,8 @@ package account.controller
 import account.dto.ErrorResponse
 import account.dto.SignupRequest
 import account.dto.SignupResponse
+import account.service.UserService
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -10,18 +12,16 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDateTime
-import jakarta.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController {
+class AuthController(private val userService: UserService) {
 
     @PostMapping("/signup")
     fun signup(
         @RequestBody request: SignupRequest,
         httpRequest: HttpServletRequest
     ): ResponseEntity<Any> {
-
         val errors = validate(request)
         if (errors.isNotEmpty()) {
             return ResponseEntity(
@@ -36,34 +36,28 @@ class AuthController {
             )
         }
 
+        val user = userService.registerUser(request)
+
         return ResponseEntity.ok(
             SignupResponse(
-                name = request.name ?: "",
-                lastname = request.lastname ?: "",
-                email = request.email ?: ""
+                id = user.id,
+                name = user.name,
+                lastname = user.lastname,
+                email = user.email
             )
         )
     }
 
     internal fun validate(request: SignupRequest): List<String> {
         val errors = mutableListOf<String>()
-
-        if (request.name.isNullOrBlank())
-            errors.add("Name must not be blank")
-
-        if (request.lastname.isNullOrBlank())
-            errors.add("Last name must not be blank")
-
+        if (request.name.isNullOrBlank()) errors.add("Name must not be blank")
+        if (request.lastname.isNullOrBlank()) errors.add("Last name must not be blank")
         if (request.email.isNullOrBlank()) {
             errors.add("Email must not be blank")
         } else if (!request.email.matches(Regex("^[^@]+@acme\\.com$"))) {
             errors.add("Email domain must be @acme.com")
         }
-
-        if (request.password.isNullOrBlank()) {
-            errors.add("Password must not be blank")
-        }
-
+        if (request.password.isNullOrBlank()) errors.add("Password must not be blank")
         return errors
     }
 }

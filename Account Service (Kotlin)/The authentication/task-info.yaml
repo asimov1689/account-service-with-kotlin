@@ -6,12 +6,36 @@ files:
   - name: src/resources/application.properties
     visible: true
     learner_created: false
-  - name: build.gradle
-    visible: true
-    learner_created: false
   - name: test/AccountServiceTest.java
     visible: true
     learner_created: false
+  - name: build.gradle
+    visible: true
+    learner_created: false
+  - name: src/account/entity/UserEntity.kt
+    visible: true
+    learner_created: true
+  - name: src/account/repository/UserRepository.kt
+    visible: true
+    learner_created: true
+  - name: src/account/exception/UserExistException.kt
+    visible: true
+    learner_created: true
+  - name: src/account/exception/RestAuthenticationEntryPoint.kt
+    visible: true
+    learner_created: true
+  - name: src/account/service/UserService.kt
+    visible: true
+    learner_created: true
+  - name: src/account/security/SecurityConfig.kt
+    visible: true
+    learner_created: true
+  - name: src/account/controller/PaymentController.kt
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1862/implement#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Mon, 27 Apr 2026 15:15:25 UTC"
 record: -1
