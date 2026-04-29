@@ -3,6 +3,7 @@ package account.unit
 import account.controller.AuthController
 import account.dto.SignupRequest
 import account.service.UserService
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,13 +15,13 @@ class SignupValidationUnitTest {
 
     @BeforeEach
     fun setUp() {
-        // Arrange - shared setup for all tests
+        // Arrange (global) — AuthController requires UserService;
+        // mock it since validate() never calls it
         controller = AuthController(mock(UserService::class.java))
     }
 
     @Test
-    fun `given blank name when validating signup request then returns name error`() {
-
+    fun `given blank name when validating then returns name error`() {
         // Arrange
         val request = SignupRequest(
             name = "",
@@ -37,8 +38,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given null name when validating signup request then returns name error`() {
-
+    fun `given null name when validating then returns name error`() {
         // Arrange
         val request = SignupRequest(
             name = null,
@@ -55,8 +55,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given blank lastname when validating signup request then returns lastname error`() {
-
+    fun `given blank lastname when validating then returns lastname error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -73,8 +72,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given null lastname when validating signup request then returns lastname error`() {
-
+    fun `given null lastname when validating then returns lastname error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -91,8 +89,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given blank email when validating signup request then returns email error`() {
-
+    fun `given blank email when validating then returns email blank error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -109,8 +106,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given null email when validating signup request then returns email error`() {
-
+    fun `given null email when validating then returns email blank error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -127,13 +123,12 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given non acme email domain when validating signup request then returns domain error`() {
-
+    fun `given non-acme email domain when validating then returns domain error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
             lastname = "Doe",
-            email = "johndoe@google.com",
+            email = "john@gmail.com",
             password = "secret"
         )
 
@@ -145,8 +140,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given email without at symbol when validating signup request then returns domain error`() {
-
+    fun `given email without at-sign when validating then returns domain error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -163,8 +157,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given blank password when validating signup request then returns password error`() {
-
+    fun `given blank password when validating then returns password error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -181,8 +174,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given null password when validating signup request then returns password error`() {
-
+    fun `given null password when validating then returns password error`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -199,8 +191,7 @@ class SignupValidationUnitTest {
     }
 
     @Test
-    fun `given valid signup request when validating then returns no errors`() {
-
+    fun `given fully valid request when validating then returns no errors`() {
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -214,5 +205,25 @@ class SignupValidationUnitTest {
 
         // Assert
         assertTrue(errors.isEmpty())
+    }
+
+    @Test
+    fun `given multiple invalid fields when validating then returns all errors`() {
+        // Arrange
+        val request = SignupRequest(
+            name = "",
+            lastname = "",
+            email = "notvalid",
+            password = ""
+        )
+
+        // Act
+        val errors = controller.validate(request)
+
+        // Assert
+        assertEquals(4, errors.size)
+        assertTrue(errors.contains("Name must not be blank"))
+        assertTrue(errors.contains("Last name must not be blank"))
+        assertTrue(errors.contains("Password must not be blank"))
     }
 }
