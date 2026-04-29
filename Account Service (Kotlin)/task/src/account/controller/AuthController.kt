@@ -1,5 +1,7 @@
 package account.controller
 
+import account.dto.ChangePassRequest
+import account.dto.ChangePassResponse
 import account.dto.ErrorResponse
 import account.dto.SignupRequest
 import account.dto.SignupResponse
@@ -7,6 +9,8 @@ import account.service.UserService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -44,6 +48,39 @@ class AuthController(private val userService: UserService) {
                 name = user.name,
                 lastname = user.lastname,
                 email = user.email
+            )
+        )
+    }
+
+    @PostMapping("/changepass")
+    fun changePassword(
+        @RequestBody request: ChangePassRequest,
+        @AuthenticationPrincipal userDetails: UserDetails,
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<Any> {
+
+        if (request.new_password.isNullOrBlank()) {
+            return ResponseEntity(
+                ErrorResponse(
+                    timestamp = LocalDateTime.now(),
+                    status = HttpStatus.BAD_REQUEST.value(),
+                    error = "Bad Request",
+                    message = "Password must not be blank",
+                    path = httpRequest.requestURI
+                ),
+                HttpStatus.BAD_REQUEST
+            )
+        }
+
+        val updatedUser = userService.changePassword(
+            email = userDetails.username,
+            newPassword = request.new_password
+        )
+
+        return ResponseEntity.ok(
+            ChangePassResponse(
+                email = updatedUser.email,
+                status = "The password has been updated successfully"
             )
         )
     }

@@ -2,8 +2,8 @@ type: framework
 content:
   - Create the service structure (API)
   - The authentication
-  - Security first
-  - Attention to business
+  - Security first!
   - The authorization
-  - Logging events
+  - The authorization
   - Securing connection
+  - Securing connection (1)

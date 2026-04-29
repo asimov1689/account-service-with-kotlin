@@ -33,6 +33,27 @@ files:
   - name: src/account/controller/PaymentController.kt
     visible: true
     learner_created: false
+  - name: src/account/exception/BreachedPasswordException.kt
+    visible: true
+    learner_created: true
+  - name: src/account/exception/PasswordTooShortException.kt
+    visible: true
+    learner_created: true
+  - name: src/account/exception/PasswordsIdenticalException.kt
+    visible: true
+    learner_created: true
+  - name: src/account/dto/ChangePassRequest.kt
+    visible: true
+    learner_created: true
+  - name: src/account/dto/ChangePassResponse.kt
+    visible: true
+    learner_created: true
+  - name: test/account/unit/PasswordSecurityUnitTest.kt
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1863/implement#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Wed, 29 Apr 2026 17:24:56 UTC"
 record: -1
