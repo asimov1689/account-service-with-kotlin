@@ -19,7 +19,7 @@ class SecurityConfig(
 ) {
 
     @Bean
-    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder(13)
 
     @Bean
     fun securityFilterChain(http: HttpSecurity, userService: UserService): SecurityFilterChain =
