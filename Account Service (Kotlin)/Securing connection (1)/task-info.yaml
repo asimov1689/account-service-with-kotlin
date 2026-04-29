@@ -1,5 +1,5 @@
 type: edu
-custom_name: Security first!
+custom_name: Securing connection
 files:
   - name: src/account/AccountServiceApplication.kt
     visible: true
@@ -13,6 +13,6 @@ files:
   - name: test/AccountServiceTest.java
     visible: true
     learner_created: false
-feedback_link: https://hyperskill.org/projects/332/stages/1863/implement#comment
+feedback_link: https://hyperskill.org/projects/332/stages/1867/implement#comment
 status: Unchecked
 record: -1

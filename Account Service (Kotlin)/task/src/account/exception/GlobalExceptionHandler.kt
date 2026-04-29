@@ -62,4 +62,49 @@ class GlobalExceptionHandler {
 
         return ResponseEntity(body, HttpStatus.INTERNAL_SERVER_ERROR)
     }
+
+    @ExceptionHandler(PasswordTooShortException::class)
+    fun handlePasswordTooShort(
+        ex: PasswordTooShortException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> = ResponseEntity(
+        ErrorResponse(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Bad Request",
+            message = ex.message!!,
+            path = request.requestURI
+        ),
+        HttpStatus.BAD_REQUEST
+    )
+
+    @ExceptionHandler(BreachedPasswordException::class)
+    fun handleBreachedPassword(
+        ex: BreachedPasswordException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> = ResponseEntity(
+        ErrorResponse(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Bad Request",
+            message = ex.message!!,
+            path = request.requestURI
+        ),
+        HttpStatus.BAD_REQUEST
+    )
+
+    @ExceptionHandler(PasswordsIdenticalException::class)
+    fun handlePasswordsIdentical(
+        ex: PasswordsIdenticalException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> = ResponseEntity(
+        ErrorResponse(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Bad Request",
+            message = ex.message!!,
+            path = request.requestURI
+        ),
+        HttpStatus.BAD_REQUEST
+    )
 }
