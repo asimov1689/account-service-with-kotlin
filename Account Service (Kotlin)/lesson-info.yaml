@@ -3,7 +3,6 @@ content:
   - Create the service structure (API)
   - The authentication
   - Security first!
+  - Attention to business
   - The authorization
-  - The authorization
-  - Securing connection
-  - Securing connection (1)
+  - Logging events

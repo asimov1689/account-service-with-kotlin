@@ -12,21 +12,6 @@ files:
   - name: build.gradle
     visible: true
     learner_created: false
-  - name: src/account/dto/SignupRequest.kt
-    visible: true
-    learner_created: true
-  - name: src/account/dto/SignupResponse.kt
-    visible: true
-    learner_created: true
-  - name: src/account/controller/AuthController.kt
-    visible: true
-    learner_created: true
-  - name: src/account/exception/GlobalExceptionHandler.kt
-    visible: true
-    learner_created: true
-  - name: src/account/dto/ErrorResponse.kt
-    visible: true
-    learner_created: true
   - name: test/account/unit/SignupValidationUnitTest.kt
     visible: true
     learner_created: true
