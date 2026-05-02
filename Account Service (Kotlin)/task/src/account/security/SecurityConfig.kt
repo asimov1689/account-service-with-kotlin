@@ -4,6 +4,7 @@ import account.exception.RestAuthenticationEntryPoint
 import account.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -31,6 +32,8 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/api/auth/signup").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/acct/payments").permitAll()
+                    .requestMatchers(HttpMethod.PUT, "/api/acct/payments").permitAll()
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
