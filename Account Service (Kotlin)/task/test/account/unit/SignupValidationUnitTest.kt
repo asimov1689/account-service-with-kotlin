@@ -2,9 +2,11 @@ package account.unit
 
 import account.controller.AuthController
 import account.dto.SignupRequest
+import account.service.UserService
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
 
 class SignupValidationUnitTest {
 
@@ -13,7 +15,7 @@ class SignupValidationUnitTest {
     @BeforeEach
     fun setUp() {
         // Arrange - shared setup for all tests
-        controller = AuthController()
+        controller = AuthController(mock(UserService::class.java))
     }
 
     @Test

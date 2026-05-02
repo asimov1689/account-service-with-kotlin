@@ -205,7 +205,7 @@ class PaymentServiceUnitTest {
     // ─── addPayments — Phase 1: field-level validation ────────────────
 
     @Test
-    fun `given negative salary at index 0 when addPayments then throws with payments[0] indexed message`() {
+    fun `given negative salary at index 0 when addPayments then throws with payments-0 indexed message`() {
         // Arrange
         val payments = listOf(
             PaymentRequest(employee = "johndoe@acme.com", period = "01-2021", salary = -1L)
@@ -221,7 +221,7 @@ class PaymentServiceUnitTest {
     }
 
     @Test
-    fun `given invalid period month 13 at index 1 when addPayments then throws with payments[1] indexed message`() {
+    fun `given invalid period month 13 at index 1 when addPayments then throws with payments-1 indexed message`() {
         // Arrange
         val payments = listOf(
             PaymentRequest(employee = "johndoe@acme.com", period = "01-2021", salary = 100000L),
