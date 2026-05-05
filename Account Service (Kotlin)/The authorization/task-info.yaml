@@ -14,25 +14,58 @@ files:
     learner_created: false
   - name: src/account/entity/UserEntity.kt
     visible: true
-    learner_created: false
-  - name: src/account/repository/UserRepository.kt
+    learner_created: true
+  - name: src/account/exception/PasswordTooShortException.kt
     visible: true
-    learner_created: false
-  - name: src/account/exception/UserExistException.kt
+    learner_created: true
+  - name: src/account/dto/SignupRequest.kt
     visible: true
-    learner_created: false
+    learner_created: true
+  - name: src/account/dto/ChangePassRequest.kt
+    visible: true
+    learner_created: true
+  - name: src/account/exception/BreachedPasswordException.kt
+    visible: true
+    learner_created: true
   - name: src/account/exception/RestAuthenticationEntryPoint.kt
     visible: true
-    learner_created: false
-  - name: src/account/service/UserService.kt
+    learner_created: true
+  - name: src/account/exception/UserExistException.kt
     visible: true
-    learner_created: false
+    learner_created: true
   - name: src/account/security/SecurityConfig.kt
     visible: true
-    learner_created: false
+    learner_created: true
+  - name: src/account/dto/SignupResponse.kt
+    visible: true
+    learner_created: true
+  - name: src/account/controller/AuthController.kt
+    visible: true
+    learner_created: true
+  - name: src/account/dto/ChangePassResponse.kt
+    visible: true
+    learner_created: true
+  - name: src/account/exception/PasswordsIdenticalException.kt
+    visible: true
+    learner_created: true
+  - name: src/account/dto/ErrorResponse.kt
+    visible: true
+    learner_created: true
+  - name: src/account/service/UserService.kt
+    visible: true
+    learner_created: true
+  - name: src/account/exception/GlobalExceptionHandler.kt
+    visible: true
+    learner_created: true
+  - name: src/account/repository/UserRepository.kt
+    visible: true
+    learner_created: true
   - name: src/account/controller/PaymentController.kt
     visible: true
-    learner_created: false
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1865/implement#comment
 status: Solved
+feedback:
+  message: Congratulations!
+  time: "Sat, 02 May 2026 13:30:30 UTC"
 record: -1

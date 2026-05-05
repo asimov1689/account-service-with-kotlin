@@ -107,4 +107,19 @@ class GlobalExceptionHandler {
         ),
         HttpStatus.BAD_REQUEST
     )
+
+    @ExceptionHandler(PaymentValidationException::class)
+    fun handlePaymentValidation(
+        ex: PaymentValidationException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> = ResponseEntity(
+        ErrorResponse(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Bad Request",
+            message = ex.message!!,
+            path = request.requestURI
+        ),
+        HttpStatus.BAD_REQUEST
+    )
 }
