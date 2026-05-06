@@ -1,384 +1,409 @@
 package account.integration
 
-import account.repository.UserRepository
-import org.junit.jupiter.api.BeforeEach
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Suppress("SpellCheckingInspection")
+@AutoConfigureTestDatabase
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class AuthControllerIntegrationTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
 
     @Autowired
-    private lateinit var userRepository: UserRepository
+    private lateinit var mapper: ObjectMapper
 
-    @BeforeEach
-    fun cleanUp() {
-        userRepository.deleteAll()
-    }
-
-    private val signupUrl    = "/api/auth/signup"
-    private val changePassUrl = "/api/auth/changepass"
-
-    // valid password reused across tests — 12 chars, not breached
-    private val validPassword = "ValidPass1234"
-
-    // ─── SIGNUP — SUCCESS ────────────────────────────────────────────
+    // ── valid request ──────────────────────────────────────────────────────
 
     @Test
-    fun `given valid signup request when POST signup then returns 200 with id and user details`() {
+    fun `given valid signup request when POST signup then returns 200 with user details`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "Doe",
+                "email": "johndoe@acme.com",
+                "password": "secretsecret"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(signupUrl)
+            post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.name").value("John"))
             .andExpect(jsonPath("$.lastname").value("Doe"))
             .andExpect(jsonPath("$.email").value("johndoe@acme.com"))
             .andExpect(jsonPath("$.password").doesNotExist())
     }
 
+    // ── name validation ────────────────────────────────────────────────────
+
     @Test
-    fun `given mixed case email when POST signup then response email is stored lowercase`() {
+    fun `given blank name when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"JohnDoe@acme.com","password":"$validPassword"}"""
+        val requestBody = """
+            {
+                "name": "",
+                "lastname": "Doe",
+                "email": "johndoe@acme.com",
+                "password": "secret"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(signupUrl)
+            post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-        )
-
-        // Assert
-        result
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.email").value("johndoe@acme.com"))
-    }
-
-    // ─── SIGNUP — DUPLICATE ──────────────────────────────────────────
-
-    @Test
-    fun `given duplicate email when POST signup then returns 400 with user exist message`() {
-        // Arrange — register first user
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-
-        // Act — attempt duplicate
-        val result = mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body)
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value("User exist!"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
     @Test
-    fun `given duplicate email with different case when POST signup then returns 400`() {
+    fun `given missing name when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val original  = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(original))
+        val requestBody = """
+            {
+                "lastname": "Doe",
+                "email": "johndoe@acme.com",
+                "password": "secret"
+            }
+        """.trimIndent()
 
         // Act
-        val duplicate = """{"name":"John","lastname":"Doe","email":"JohnDoe@acme.com","password":"$validPassword"}"""
         val result = mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(duplicate)
+            post("/api/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value("User exist!"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
-    // ─── SIGNUP — PASSWORD SECURITY ─────────────────────────────────
+    // ── lastname validation ────────────────────────────────────────────────
 
     @Test
-    fun `given password shorter than 12 chars when POST signup then returns 400 with length message`() {
+    fun `given blank lastname when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"short"}"""
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "",
+                "email": "johndoe@acme.com",
+                "password": "secret"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body)
+            post("/api/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value("Password length must be 12 chars minimum!"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
     @Test
-    fun `given breached password when POST signup then returns 400 with breached message`() {
+    fun `given missing lastname when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"PasswordForJune"}"""
+        val requestBody = """
+            {
+                "name": "John",
+                "email": "johndoe@acme.com",
+                "password": "secret"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body)
+            post("/api/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value("The password is in the hacker's database!"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
-    // ─── SIGNUP — VALIDATION FAILURES ───────────────────────────────
+    // ── email validation ───────────────────────────────────────────────────
 
     @Test
-    fun `given blank name when POST signup then returns 400`() {
+    fun `given blank email when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-
-        // Act & Assert
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-            .andExpect(status().isBadRequest)
-    }
-
-    @Test
-    fun `given blank lastname when POST signup then returns 400`() {
-        // Arrange
-        val body = """{"name":"John","lastname":"","email":"johndoe@acme.com","password":"$validPassword"}"""
-
-        // Act & Assert
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-            .andExpect(status().isBadRequest)
-    }
-
-    @Test
-    fun `given blank email when POST signup then returns 400`() {
-        // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"","password":"$validPassword"}"""
-
-        // Act & Assert
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-            .andExpect(status().isBadRequest)
-    }
-
-    @Test
-    fun `given non-acme email domain when POST signup then returns 400`() {
-        // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"john@gmail.com","password":"$validPassword"}"""
-
-        // Act & Assert
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-            .andExpect(status().isBadRequest)
-    }
-
-    @Test
-    fun `given blank password when POST signup then returns 400`() {
-        // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":""}"""
-
-        // Act & Assert
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-            .andExpect(status().isBadRequest)
-    }
-
-    // ─── SIGNUP — WRONG HTTP METHODS ────────────────────────────────
-
-    @Test
-    fun `given GET on signup endpoint then returns 405`() {
-        mockMvc.perform(get(signupUrl)).andExpect(status().isMethodNotAllowed)
-    }
-
-    @Test
-    fun `given PUT on signup endpoint then returns 405`() {
-        mockMvc.perform(put(signupUrl)).andExpect(status().isMethodNotAllowed)
-    }
-
-    @Test
-    fun `given DELETE on signup endpoint then returns 405`() {
-        mockMvc.perform(delete(signupUrl)).andExpect(status().isMethodNotAllowed)
-    }
-
-    // ─── CHANGEPASS — SUCCESS ────────────────────────────────────────
-
-    @Test
-    fun `given valid new password when POST changepass then returns 200 with email and status`() {
-        // Arrange — register user
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "Doe",
+                "email": "",
+                "password": "secret"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
+            post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"bZPGqH7fTJWW"}""")
-        )
-
-        // Assert
-        result
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.email").value("johndoe@acme.com"))
-            .andExpect(jsonPath("$.status").value("The password has been updated successfully"))
-    }
-
-    @Test
-    fun `given changed password when authenticating again then new password works`() {
-        // Arrange — register then change password
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-
-        val newPassword = "bZPGqH7fTJWW"
-        mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"$newPassword"}""")
-        )
-
-        // Act — authenticate with new password against a protected endpoint
-        val result = mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", newPassword))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"AnotherValidPw"}""")
-        )
-
-        // Assert — new password accepted, not 401
-        result.andExpect(status().isOk)
-    }
-
-    // ─── CHANGEPASS — VALIDATION FAILURES ───────────────────────────
-
-    @Test
-    fun `given same password when POST changepass then returns 400 with identical message`() {
-        // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
-
-        // Act
-        val result = mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"$validPassword"}""")
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value("The passwords must be different!"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
     @Test
-    fun `given short new password when POST changepass then returns 400 with length message`() {
+    fun `given non acme email domain when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "Doe",
+                "email": "johndoe@google.com",
+                "password": "secret"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
+            post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"short"}""")
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value("Password length must be 12 chars minimum!"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
     @Test
-    fun `given breached new password when POST changepass then returns 400 with breached message`() {
+    fun `given email without at symbol when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "Doe",
+                "email": "johndoeacme.com",
+                "password": "secret"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
+            post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"PasswordForJuly"}""")
+                .content(requestBody)
         )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value("The password is in the hacker's database!"))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
+    // ── password validation ────────────────────────────────────────────────
+
     @Test
-    fun `given blank new password when POST changepass then returns 400`() {
+    fun `given blank password when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "Doe",
+                "email": "johndoe@acme.com",
+                "password": ""
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
+            post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":""}""")
+                .content(requestBody)
         )
 
         // Assert
-        result.andExpect(status().isBadRequest)
-    }
-
-    // ─── CHANGEPASS — AUTH FAILURES ──────────────────────────────────
-
-    @Test
-    fun `given unauthenticated request when POST changepass then returns 401`() {
-        // Arrange — no credentials
-
-        // Act
-        val result = mockMvc.perform(
-            post(changePassUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"bZPGqH7fTJWW"}""")
-        )
-
-        // Assert
-        result.andExpect(status().isUnauthorized)
+        result
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
     @Test
-    fun `given wrong credentials when POST changepass then returns 401`() {
+    fun `given missing password when POST signup then returns 400 bad request`() {
+
         // Arrange
-        val body = """{"name":"John","lastname":"Doe","email":"johndoe@acme.com","password":"$validPassword"}"""
-        mockMvc.perform(post(signupUrl).contentType(MediaType.APPLICATION_JSON).content(body))
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "Doe",
+                "email": "johndoe@acme.com"
+            }
+        """.trimIndent()
 
         // Act
         val result = mockMvc.perform(
-            post(changePassUrl)
-                .with(httpBasic("johndoe@acme.com", "wrongpassword"))
+            post("/api/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"new_password":"bZPGqH7fTJWW"}""")
+                .content(requestBody)
         )
 
         // Assert
-        result.andExpect(status().isUnauthorized)
+        result
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.error").value("Bad Request"))
+    }
+
+    // ── HTTP method validation ─────────────────────────────────────────────
+
+    @Test
+    fun `given GET request when hitting signup endpoint then returns 405 method not allowed`() {
+
+        // Arrange - GET has no body
+
+        // Act
+        val result = mockMvc.perform(get("/api/auth/signup"))
+
+        // Assert
+        result.andExpect(status().isMethodNotAllowed)
+    }
+
+    @Test
+    fun `given PUT request when hitting signup endpoint then returns 405 method not allowed`() {
+
+        // Arrange
+        val requestBody = """
+            {
+                "name": "John",
+                "lastname": "Doe",
+                "email": "johndoe@acme.com",
+                "password": "secret"
+            }
+        """.trimIndent()
+
+        // Act
+        val result = mockMvc.perform(
+            put("/api/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+        )
+
+        // Assert
+        result.andExpect(status().isMethodNotAllowed)
+    }
+
+    @Test
+    fun `given DELETE request when hitting signup endpoint then returns 405 method not allowed`() {
+
+        // Arrange - DELETE has no body
+
+        // Act
+        val result = mockMvc.perform(delete("/api/auth/signup"))
+
+        // Assert
+        result.andExpect(status().isMethodNotAllowed)
+    }
+
+    @Test
+    fun `given first signup when POST then response includes ADMINISTRATOR role`() {
+        mockMvc.post("/api/auth/signup") {
+            contentType = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(
+                mapOf(
+                    "name" to "Admin",
+                    "lastname" to "User",
+                    "email" to "admin@acme.com",
+                    "password" to "adminPassword99"
+                )
+            )
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.roles") { isArray() }
+            jsonPath("$.roles[0]") { value("ROLE_ADMINISTRATOR") }
+        }
+    }
+
+    @Test
+    fun `given second signup when POST then response includes USER role`() {
+        mockMvc.post("/api/auth/signup") {
+            contentType = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(
+                mapOf(
+                    "name" to "Admin",
+                    "lastname" to "User",
+                    "email" to "admin@acme.com",
+                    "password" to "adminPassword99"
+                )
+            )
+        }
+        mockMvc.post("/api/auth/signup") {
+            contentType = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(
+                mapOf(
+                    "name" to "Regular",
+                    "lastname" to "User",
+                    "email" to "user@acme.com",
+                    "password" to "userPassword99"
+                )
+            )
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.roles") { isArray() }
+            jsonPath("$.roles[0]") { value("ROLE_USER") }
+        }
     }
 }

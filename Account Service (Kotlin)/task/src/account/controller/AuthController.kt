@@ -5,6 +5,7 @@ import account.dto.ChangePassResponse
 import account.dto.ErrorResponse
 import account.dto.SignupRequest
 import account.dto.SignupResponse
+import account.entity.sortedRoleNames
 import account.service.UserService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
@@ -47,7 +48,8 @@ class AuthController(private val userService: UserService) {
                 id = user.id,
                 name = user.name,
                 lastname = user.lastname,
-                email = user.email
+                email = user.email,
+                roles = user.sortedRoleNames()
             )
         )
     }
@@ -58,7 +60,6 @@ class AuthController(private val userService: UserService) {
         @AuthenticationPrincipal userDetails: UserDetails,
         httpRequest: HttpServletRequest
     ): ResponseEntity<Any> {
-
         if (request.new_password.isNullOrBlank()) {
             return ResponseEntity(
                 ErrorResponse(
