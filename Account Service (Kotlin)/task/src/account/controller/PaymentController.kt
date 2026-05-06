@@ -5,7 +5,6 @@ import account.dto.PaymentResponse
 import account.exception.PaymentValidationException
 import account.repository.UserRepository
 import account.service.PaymentService
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
@@ -21,8 +20,7 @@ class PaymentController(
     @GetMapping("/payment")
     fun getPayment(
         @RequestParam(required = false) period: String?,
-        @AuthenticationPrincipal userDetails: UserDetails,
-        httpRequest: HttpServletRequest
+        @AuthenticationPrincipal userDetails: UserDetails
     ): ResponseEntity<Any> {
         val email = userDetails.username
 

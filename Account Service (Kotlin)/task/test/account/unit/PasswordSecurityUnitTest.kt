@@ -2,6 +2,7 @@ package account.unit
 
 import account.exception.BreachedPasswordException
 import account.exception.PasswordTooShortException
+import account.repository.RoleRepository
 import account.repository.UserRepository
 import account.service.UserService
 import org.junit.jupiter.api.BeforeEach
@@ -20,6 +21,7 @@ class PasswordSecurityUnitTest {
         // validatePasswordSecurity() uses neither
         userService = UserService(
             mock(UserRepository::class.java),
+            mock(RoleRepository::class.java),
             mock(PasswordEncoder::class.java)
         )
     }
