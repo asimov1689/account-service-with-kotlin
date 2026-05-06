@@ -1,125 +1,87 @@
 package account.exception
 
 import account.dto.ErrorResponse
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.time.LocalDateTime
-import jakarta.servlet.http.HttpServletRequest
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+
+    private fun errorResponse(
+        status: HttpStatus,
+        message: String,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> = ResponseEntity(
+        ErrorResponse(
+            timestamp = LocalDateTime.now(),
+            status = status.value(),
+            error = status.reasonPhrase,
+            message = message,
+            path = request.requestURI
+        ),
+        status
+    )
 
     @ExceptionHandler(UserExistException::class)
     fun handleUserExist(
         ex: UserExistException,
         request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(
-            ErrorResponse(
-                timestamp = LocalDateTime.now(),
-                status = HttpStatus.BAD_REQUEST.value(),
-                error = "Bad Request",
-                message = "User exist!",
-                path = request.requestURI
-            ),
-            HttpStatus.BAD_REQUEST
-        )
-    }
+    ) = errorResponse(HttpStatus.BAD_REQUEST, "User exist!", request)
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
-    fun handleMethodNotAllowed(
-        ex: HttpRequestMethodNotSupportedException,
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFound(
+        ex: UserNotFoundException,
         request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> {
+    ) = errorResponse(HttpStatus.NOT_FOUND, ex.message!!, request)
 
-        val body = ErrorResponse(
-            timestamp = LocalDateTime.now(),
-            status = HttpStatus.METHOD_NOT_ALLOWED.value(),
-            error = "Method Not Allowed",
-            message = "Method ${ex.method} is not supported for this endpoint",
-            path = request.requestURI
-        )
-
-        return ResponseEntity(body, HttpStatus.METHOD_NOT_ALLOWED)
-    }
-
-    @ExceptionHandler(Exception::class)
-    fun handleGenericError(
-        ex: Exception,
+    @ExceptionHandler(AdminOperationException::class)
+    fun handleAdminOperation(
+        ex: AdminOperationException,
         request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> {
-
-        val body = ErrorResponse(
-            timestamp = LocalDateTime.now(),
-            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            error = "Internal Server Error",
-            message = "An unexpected error occurred",
-            path = request.requestURI
-        )
-
-        return ResponseEntity(body, HttpStatus.INTERNAL_SERVER_ERROR)
-    }
+    ) = errorResponse(HttpStatus.BAD_REQUEST, ex.message!!, request)
 
     @ExceptionHandler(PasswordTooShortException::class)
     fun handlePasswordTooShort(
         ex: PasswordTooShortException,
         request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> = ResponseEntity(
-        ErrorResponse(
-            timestamp = LocalDateTime.now(),
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = "Bad Request",
-            message = ex.message!!,
-            path = request.requestURI
-        ),
-        HttpStatus.BAD_REQUEST
-    )
+    ) = errorResponse(HttpStatus.BAD_REQUEST, ex.message!!, request)
 
     @ExceptionHandler(BreachedPasswordException::class)
     fun handleBreachedPassword(
         ex: BreachedPasswordException,
         request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> = ResponseEntity(
-        ErrorResponse(
-            timestamp = LocalDateTime.now(),
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = "Bad Request",
-            message = ex.message!!,
-            path = request.requestURI
-        ),
-        HttpStatus.BAD_REQUEST
-    )
+    ) = errorResponse(HttpStatus.BAD_REQUEST, ex.message!!, request)
 
     @ExceptionHandler(PasswordsIdenticalException::class)
     fun handlePasswordsIdentical(
         ex: PasswordsIdenticalException,
         request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> = ResponseEntity(
-        ErrorResponse(
-            timestamp = LocalDateTime.now(),
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = "Bad Request",
-            message = ex.message!!,
-            path = request.requestURI
-        ),
-        HttpStatus.BAD_REQUEST
-    )
+    ) = errorResponse(HttpStatus.BAD_REQUEST, ex.message!!, request)
 
     @ExceptionHandler(PaymentValidationException::class)
     fun handlePaymentValidation(
         ex: PaymentValidationException,
         request: HttpServletRequest
-    ): ResponseEntity<ErrorResponse> = ResponseEntity(
-        ErrorResponse(
-            timestamp = LocalDateTime.now(),
-            status = HttpStatus.BAD_REQUEST.value(),
-            error = "Bad Request",
-            message = ex.message!!,
-            path = request.requestURI
-        ),
-        HttpStatus.BAD_REQUEST
+    ) = errorResponse(HttpStatus.BAD_REQUEST, ex.message!!, request)
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleMethodNotAllowed(
+        ex: HttpRequestMethodNotSupportedException,
+        request: HttpServletRequest
+    ) = errorResponse(
+        HttpStatus.METHOD_NOT_ALLOWED,
+        "Method ${ex.method} is not supported for this endpoint",
+        request
     )
+
+    @ExceptionHandler(Exception::class)
+    fun handleGenericError(
+        ex: Exception,
+        request: HttpServletRequest
+    ) = errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", request)
 }
