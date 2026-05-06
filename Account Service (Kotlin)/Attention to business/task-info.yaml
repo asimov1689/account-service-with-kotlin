@@ -30,7 +30,7 @@ files:
   - name: src/account/security/SecurityConfig.kt
     visible: true
     learner_created: false
-  - name: src/account/controller/AccountController.kt
+  - name: src/account/controller/PaymentController.kt
     visible: true
     learner_created: false
   - name: src/account/exception/BreachedPasswordException.kt
@@ -51,42 +51,6 @@ files:
   - name: test/account/unit/PasswordSecurityUnitTest.kt
     visible: true
     learner_created: false
-  - name: src/account/entity/PaymentEntity.kt
-    visible: true
-    learner_created: true
-  - name: src/account/repository/PaymentRepository.kt
-    visible: true
-    learner_created: true
-  - name: src/account/dto/PaymentRequest.kt
-    visible: true
-    learner_created: true
-  - name: src/account/dto/PaymentResponse.kt
-    visible: true
-    learner_created: true
-  - name: src/account/dto/StatusResponse.kt
-    visible: true
-    learner_created: true
-  - name: src/account/service/PaymentService.kt
-    visible: true
-    learner_created: true
-  - name: src/account/exception/PaymentValidationException.kt
-    visible: true
-    learner_created: true
-  - name: src/account/controller/PaymentController.kt
-    visible: true
-    learner_created: true
-  - name: test/account/unit/PaymentServiceUnitTest.kt
-    visible: true
-    learner_created: true
-  - name: test/account/integration/AccountControllerIntegrationTest.kt
-    visible: true
-    learner_created: true
-  - name: test/account/integration/PaymentControllerIntegrationTest.kt
-    visible: true
-    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1864/implement#comment
 status: Solved
-feedback:
-  message: Congratulations!
-  time: "Sat, 02 May 2026 18:17:25 UTC"
 record: -1
