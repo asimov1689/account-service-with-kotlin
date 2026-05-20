@@ -4,6 +4,7 @@ import account.exception.BreachedPasswordException
 import account.exception.PasswordTooShortException
 import account.repository.RoleRepository
 import account.repository.UserRepository
+import account.service.SecurityEventService
 import account.service.UserService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -17,12 +18,12 @@ class PasswordSecurityUnitTest {
 
     @BeforeEach
     fun setUp() {
-        // UserService needs these two deps — mock both since
-        // validatePasswordSecurity() uses neither
+        // validatePasswordSecurity() uses none of these deps — mock all
         userService = UserService(
             mock(UserRepository::class.java),
             mock(RoleRepository::class.java),
-            mock(PasswordEncoder::class.java)
+            mock(PasswordEncoder::class.java),
+            mock(SecurityEventService::class.java)
         )
     }
 
