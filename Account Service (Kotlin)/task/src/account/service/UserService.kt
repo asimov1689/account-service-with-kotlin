@@ -118,6 +118,7 @@ class UserService(
     fun incrementFailedLoginAttempts(email: String, path: String): Boolean {
         val user = userRepository.findByEmail(email.lowercase()) ?: return false
         if (user.locked) return false
+        if (user.roles.any { it.name == "ROLE_ADMINISTRATOR" }) return false
 
         user.failedLoginAttempts++
 

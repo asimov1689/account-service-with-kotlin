@@ -18,7 +18,6 @@ class PasswordSecurityUnitTest {
 
     @BeforeEach
     fun setUp() {
-        // validatePasswordSecurity() uses none of these deps — mock all
         userService = UserService(
             mock(UserRepository::class.java),
             mock(RoleRepository::class.java),

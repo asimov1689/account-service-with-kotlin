@@ -14,7 +14,7 @@ class SecurityController(
     private val securityEventRepository: SecurityEventRepository
 ) {
 
-    @GetMapping("/events")
+    @GetMapping("/events", "/events/")
     fun getEvents(): ResponseEntity<List<SecurityEventEntity>> {
         val events = securityEventRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
         return ResponseEntity.ok(events)

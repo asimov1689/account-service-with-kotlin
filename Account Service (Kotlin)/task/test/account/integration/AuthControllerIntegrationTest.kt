@@ -1,5 +1,7 @@
 package account.integration
 
+import account.repository.UserRepository
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -19,6 +21,14 @@ class AuthControllerIntegrationTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
+
+    @Autowired
+    private lateinit var userRepository: UserRepository
+
+    @BeforeEach
+    fun setUp() {
+        userRepository.deleteAll()
+    }
 
     // ── valid request ──────────────────────────────────────────────────────
 

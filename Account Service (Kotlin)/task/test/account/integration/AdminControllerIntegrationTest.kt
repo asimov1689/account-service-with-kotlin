@@ -52,9 +52,15 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when GET all users then returns 200 with sorted list`() {
-        mockMvc.get("/api/admin/user") {
+        // Arrange — admin and user registered in setUp
+
+        // Act
+        val result = mockMvc.get("/api/admin/user") {
             headers { setBasicAuth(adminEmail, adminPass) }
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isOk() }
             jsonPath("$[0].email") { value(adminEmail) }
             jsonPath("$[0].roles[0]") { value("ROLE_ADMINISTRATOR") }
@@ -65,9 +71,15 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given user role when GET all users then returns 403 forbidden`() {
-        mockMvc.get("/api/admin/user") {
+        // Arrange — non-admin user registered in setUp
+
+        // Act
+        val result = mockMvc.get("/api/admin/user") {
             headers { setBasicAuth(userEmail, userPass) }
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isForbidden() }
             jsonPath("$.status") { value(403) }
             jsonPath("$.error") { value("Forbidden") }
@@ -77,9 +89,15 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when DELETE existing user then returns 200 and deleted message`() {
-        mockMvc.delete("/api/admin/user/$userEmail") {
+        // Arrange — user registered in setUp
+
+        // Act
+        val result = mockMvc.delete("/api/admin/user/$userEmail") {
             headers { setBasicAuth(adminEmail, adminPass) }
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isOk() }
             jsonPath("$.user") { value(userEmail) }
             jsonPath("$.status") { value("Deleted successfully!") }
@@ -88,9 +106,15 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when DELETE self then returns 400`() {
-        mockMvc.delete("/api/admin/user/$adminEmail") {
+        // Arrange — admin registered in setUp
+
+        // Act
+        val result = mockMvc.delete("/api/admin/user/$adminEmail") {
             headers { setBasicAuth(adminEmail, adminPass) }
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isBadRequest() }
             jsonPath("$.status") { value(400) }
             jsonPath("$.message") { value("Can't remove ADMINISTRATOR role!") }
@@ -99,9 +123,15 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when DELETE nonexistent user then returns 404`() {
-        mockMvc.delete("/api/admin/user/nobody@acme.com") {
+        // Arrange — nobody@acme.com was never registered
+
+        // Act
+        val result = mockMvc.delete("/api/admin/user/nobody@acme.com") {
             headers { setBasicAuth(adminEmail, adminPass) }
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isNotFound() }
             jsonPath("$.status") { value(404) }
             jsonPath("$.message") { value("User not found!") }
@@ -110,7 +140,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when GRANT accountant role to user then returns 200 with updated roles`() {
-        mockMvc.put("/api/admin/user/role") {
+        // Arrange — user registered in setUp with only ROLE_USER
+
+        // Act
+        val result = mockMvc.put("/api/admin/user/role") {
             headers { setBasicAuth(adminEmail, adminPass) }
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(
@@ -120,7 +153,10 @@ class AdminControllerIntegrationTest {
                     "operation" to "GRANT"
                 )
             )
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isOk() }
             jsonPath("$.email") { value(userEmail) }
             jsonPath("$.roles[0]") { value("ROLE_ACCOUNTANT") }
@@ -130,7 +166,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when GRANT admin role to business user then returns 400`() {
-        mockMvc.put("/api/admin/user/role") {
+        // Arrange — user registered in setUp as a business user
+
+        // Act
+        val result = mockMvc.put("/api/admin/user/role") {
             headers { setBasicAuth(adminEmail, adminPass) }
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(
@@ -140,7 +179,10 @@ class AdminControllerIntegrationTest {
                     "operation" to "GRANT"
                 )
             )
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isBadRequest() }
             jsonPath("$.message") {
                 value("The user cannot combine administrative and business roles!")
@@ -150,7 +192,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when REMOVE role user does not have then returns 400`() {
-        mockMvc.put("/api/admin/user/role") {
+        // Arrange — user only has ROLE_USER, not ACCOUNTANT
+
+        // Act
+        val result = mockMvc.put("/api/admin/user/role") {
             headers { setBasicAuth(adminEmail, adminPass) }
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(
@@ -160,7 +205,10 @@ class AdminControllerIntegrationTest {
                     "operation" to "REMOVE"
                 )
             )
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isBadRequest() }
             jsonPath("$.message") { value("The user does not have a role!") }
         }
@@ -168,7 +216,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when REMOVE only existing role then returns 400`() {
-        mockMvc.put("/api/admin/user/role") {
+        // Arrange — user only has ROLE_USER
+
+        // Act
+        val result = mockMvc.put("/api/admin/user/role") {
             headers { setBasicAuth(adminEmail, adminPass) }
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(
@@ -178,7 +229,10 @@ class AdminControllerIntegrationTest {
                     "operation" to "REMOVE"
                 )
             )
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isBadRequest() }
             jsonPath("$.message") { value("The user must have at least one role!") }
         }
@@ -186,7 +240,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when REMOVE ADMINISTRATOR role then returns 400`() {
-        mockMvc.put("/api/admin/user/role") {
+        // Arrange — admin registered in setUp
+
+        // Act
+        val result = mockMvc.put("/api/admin/user/role") {
             headers { setBasicAuth(adminEmail, adminPass) }
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(
@@ -196,7 +253,10 @@ class AdminControllerIntegrationTest {
                     "operation" to "REMOVE"
                 )
             )
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isBadRequest() }
             jsonPath("$.message") { value("Can't remove ADMINISTRATOR role!") }
         }
@@ -204,7 +264,10 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given administrator when PUT role for nonexistent user then returns 404`() {
-        mockMvc.put("/api/admin/user/role") {
+        // Arrange — nobody@acme.com was never registered
+
+        // Act
+        val result = mockMvc.put("/api/admin/user/role") {
             headers { setBasicAuth(adminEmail, adminPass) }
             contentType = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(
@@ -214,7 +277,10 @@ class AdminControllerIntegrationTest {
                     "operation" to "GRANT"
                 )
             )
-        }.andExpect {
+        }
+
+        // Assert
+        result.andExpect {
             status { isNotFound() }
             jsonPath("$.message") { value("User not found!") }
         }
@@ -222,7 +288,13 @@ class AdminControllerIntegrationTest {
 
     @Test
     fun `given no credentials when GET admin users then returns 401`() {
-        mockMvc.get("/api/admin/user").andExpect {
+        // Arrange — no credentials provided
+
+        // Act
+        val result = mockMvc.get("/api/admin/user")
+
+        // Assert
+        result.andExpect {
             status { isUnauthorized() }
         }
     }
