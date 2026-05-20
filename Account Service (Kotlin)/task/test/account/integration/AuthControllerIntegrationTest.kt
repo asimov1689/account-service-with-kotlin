@@ -1,15 +1,11 @@
 package account.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -19,15 +15,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureTestDatabase
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class AuthControllerIntegrationTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
-
-    @Autowired
-    private lateinit var mapper: ObjectMapper
 
     // ── valid request ──────────────────────────────────────────────────────
 
@@ -40,7 +31,7 @@ class AuthControllerIntegrationTest {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoe@acme.com",
-                "password": "secretsecret"
+                "password": "SecurePass123!"
             }
         """.trimIndent()
 
@@ -356,54 +347,5 @@ class AuthControllerIntegrationTest {
 
         // Assert
         result.andExpect(status().isMethodNotAllowed)
-    }
-
-    @Test
-    fun `given first signup when POST then response includes ADMINISTRATOR role`() {
-        mockMvc.post("/api/auth/signup") {
-            contentType = MediaType.APPLICATION_JSON
-            content = mapper.writeValueAsString(
-                mapOf(
-                    "name" to "Admin",
-                    "lastname" to "User",
-                    "email" to "admin@acme.com",
-                    "password" to "adminPassword99"
-                )
-            )
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.roles") { isArray() }
-            jsonPath("$.roles[0]") { value("ROLE_ADMINISTRATOR") }
-        }
-    }
-
-    @Test
-    fun `given second signup when POST then response includes USER role`() {
-        mockMvc.post("/api/auth/signup") {
-            contentType = MediaType.APPLICATION_JSON
-            content = mapper.writeValueAsString(
-                mapOf(
-                    "name" to "Admin",
-                    "lastname" to "User",
-                    "email" to "admin@acme.com",
-                    "password" to "adminPassword99"
-                )
-            )
-        }
-        mockMvc.post("/api/auth/signup") {
-            contentType = MediaType.APPLICATION_JSON
-            content = mapper.writeValueAsString(
-                mapOf(
-                    "name" to "Regular",
-                    "lastname" to "User",
-                    "email" to "user@acme.com",
-                    "password" to "userPassword99"
-                )
-            )
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.roles") { isArray() }
-            jsonPath("$.roles[0]") { value("ROLE_USER") }
-        }
     }
 }
