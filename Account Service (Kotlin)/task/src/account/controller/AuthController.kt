@@ -4,8 +4,6 @@ import account.dto.ChangePassRequest
 import account.dto.ChangePassResponse
 import account.dto.ErrorResponse
 import account.dto.SignupRequest
-import account.dto.SignupResponse
-import account.entity.sortedRoleNames
 import account.service.UserService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
@@ -43,15 +41,7 @@ class AuthController(private val userService: UserService) {
 
         val user = userService.registerUser(request)
 
-        return ResponseEntity.ok(
-            SignupResponse(
-                id = user.id,
-                name = user.name,
-                lastname = user.lastname,
-                email = user.email,
-                roles = user.sortedRoleNames()
-            )
-        )
+        return ResponseEntity.ok(user)
     }
 
     @PostMapping("/changepass")

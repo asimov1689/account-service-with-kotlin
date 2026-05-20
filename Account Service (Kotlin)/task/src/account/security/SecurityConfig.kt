@@ -1,57 +1,48 @@
 package account.security
 
-import account.exception.RestAccessDeniedHandler
+import account.security.RestAccessDeniedHandler
 import account.exception.RestAuthenticationEntryPoint
-import account.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val restAuthenticationEntryPoint: RestAuthenticationEntryPoint,
-    private val restAccessDeniedHandler: RestAccessDeniedHandler
+    private val authenticationEntryPoint: RestAuthenticationEntryPoint,
+    private val accessDeniedHandler: RestAccessDeniedHandler,
+    private val loginAuditFilter: LoginAuditFilter
 ) {
 
     @Bean
-    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder(13)
-
-    @Bean
-    fun securityFilterChain(
-        http: HttpSecurity,
-        userService: UserService
-    ): SecurityFilterChain =
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .httpBasic(Customizer.withDefaults())
-            .exceptionHandling {
-                it.authenticationEntryPoint(restAuthenticationEntryPoint)
-                it.accessDeniedHandler(restAccessDeniedHandler)
-            }
+            .httpBasic { it.authenticationEntryPoint(authenticationEntryPoint) }
+            .exceptionHandling { it.accessDeniedHandler(accessDeniedHandler) }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .csrf { it.disable() }
-            .headers { it.frameOptions { fo -> fo.disable() } }
+            .headers { it.frameOptions { fo -> fo.disable() } }   // H2 console if needed
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/api/auth/signup").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/changepass").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/api/empl/payment")
-                    .hasAnyAuthority("ROLE_USER", "ROLE_ACCOUNTANT")
-                    .requestMatchers(HttpMethod.POST, "/api/acct/payments")
-                    .hasAuthority("ROLE_ACCOUNTANT")
-                    .requestMatchers(HttpMethod.PUT, "/api/acct/payments")
-                    .hasAuthority("ROLE_ACCOUNTANT")
-                    .requestMatchers("/api/admin/**")
-                    .hasAuthority("ROLE_ADMINISTRATOR")
+                    .requestMatchers(HttpMethod.GET, "/api/empl/payment").hasAnyRole("USER", "ACCOUNTANT")
+                    .requestMatchers(HttpMethod.POST, "/api/acct/payments").hasRole("ACCOUNTANT")
+                    .requestMatchers(HttpMethod.PUT, "/api/acct/payments").hasRole("ACCOUNTANT")
+                    .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
+                    .requestMatchers(HttpMethod.PUT, "/api/admin/user/access").hasRole("ADMINISTRATOR")
+                    .requestMatchers("/api/security/**").hasRole("AUDITOR")
                     .anyRequest().authenticated()
             }
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .userDetailsService(userService)
-            .build()
+
+            .addFilterBefore(loginAuditFilter, BasicAuthenticationFilter::class.java)
+
+        return http.build()
+    }
+
 }

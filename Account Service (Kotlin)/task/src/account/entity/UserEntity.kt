@@ -1,3 +1,5 @@
+// src/main/kotlin/account/entity/UserEntity.kt
+
 package account.entity
 
 import account.dto.UserAdminResponse
@@ -18,17 +20,20 @@ import jakarta.persistence.Table
 data class UserEntity(
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    val name: String,
+    @Column(nullable = false)
+    val name: String = "",
 
-    val lastname: String,
+    @Column(nullable = false)
+    val lastname: String = "",
 
-    @Column(unique = true)
-    val email: String,
+    @Column(unique = true, nullable = false)
+    val email: String = "",
 
-    val password: String,
+    @Column(nullable = false)
+    var password: String = "",
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.MERGE])
     @JoinTable(
@@ -36,15 +41,23 @@ data class UserEntity(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "role_id")]
     )
-    val roles: MutableSet<RoleEntity> = mutableSetOf()
+    val roles: MutableSet<RoleEntity> = mutableSetOf(),
+
+    @Column(nullable = false)
+    var locked: Boolean = false,
+
+    @Column(nullable = false)
+    var failedLoginAttempts: Int = 0
 )
 
-fun UserEntity.sortedRoleNames(): List<String> = roles.map { it.name }.sorted()
+fun UserEntity.sortedRoleNames(): List<String> =
+    roles.map { it.name }.sorted()
 
-fun UserEntity.toAdminResponse() = UserAdminResponse(
-    id = id,
-    name = name,
-    lastname = lastname,
-    email = email,
-    roles = sortedRoleNames()
-)
+fun UserEntity.toAdminResponse(): UserAdminResponse =
+    UserAdminResponse(
+        id = id,
+        name = name,
+        lastname = lastname,
+        email = email,
+        roles = sortedRoleNames()
+    )
