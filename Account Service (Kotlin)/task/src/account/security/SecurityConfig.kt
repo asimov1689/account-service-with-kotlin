@@ -29,14 +29,14 @@ class SecurityConfig(
             .headers { it.frameOptions { fo -> fo.disable() } }   // H2 console if needed
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+                    .requestMatchers("/api/auth/signup").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/changepass").authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/empl/payment").hasAnyRole("USER", "ACCOUNTANT")
                     .requestMatchers(HttpMethod.POST, "/api/acct/payments").hasRole("ACCOUNTANT")
                     .requestMatchers(HttpMethod.PUT, "/api/acct/payments").hasRole("ACCOUNTANT")
                     .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
                     .requestMatchers(HttpMethod.PUT, "/api/admin/user/access").hasRole("ADMINISTRATOR")
-                    .requestMatchers(HttpMethod.GET, "/api/security/events").hasRole("AUDITOR")
+                    .requestMatchers("/api/security/**").hasRole("AUDITOR")
                     .anyRequest().authenticated()
             }
 
