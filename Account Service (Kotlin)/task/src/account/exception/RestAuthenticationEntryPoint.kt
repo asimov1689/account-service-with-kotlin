@@ -11,7 +11,7 @@ class RestAuthenticationEntryPoint : AuthenticationEntryPoint {
     override fun commence(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        authException: AuthenticationException
+        authException: AuthenticationException,
     ) {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.message)
     }

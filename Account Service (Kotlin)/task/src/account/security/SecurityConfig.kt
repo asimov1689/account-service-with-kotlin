@@ -1,6 +1,5 @@
 package account.security
 
-import account.security.RestAccessDeniedHandler
 import account.exception.RestAuthenticationEntryPoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,9 +15,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 class SecurityConfig(
     private val authenticationEntryPoint: RestAuthenticationEntryPoint,
     private val accessDeniedHandler: RestAccessDeniedHandler,
-    private val loginAuditFilter: LoginAuditFilter
+    private val loginAuditFilter: LoginAuditFilter,
 ) {
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -26,23 +24,27 @@ class SecurityConfig(
             .exceptionHandling { it.accessDeniedHandler(accessDeniedHandler) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .csrf { it.disable() }
-            .headers { it.frameOptions { fo -> fo.disable() } }   // H2 console if needed
+            .headers { it.frameOptions { fo -> fo.disable() } }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/api/auth/signup").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/auth/changepass").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/api/empl/payment").hasAnyRole("USER", "ACCOUNTANT")
-                    .requestMatchers(HttpMethod.POST, "/api/acct/payments").hasRole("ACCOUNTANT")
-                    .requestMatchers(HttpMethod.PUT, "/api/acct/payments").hasRole("ACCOUNTANT")
-                    .requestMatchers("/api/admin/**").hasRole("ADMINISTRATOR")
-                    .requestMatchers(HttpMethod.PUT, "/api/admin/user/access").hasRole("ADMINISTRATOR")
-                    .requestMatchers("/api/security/**").hasRole("AUDITOR")
-                    .anyRequest().authenticated()
-            }
-
-            .addFilterBefore(loginAuditFilter, BasicAuthenticationFilter::class.java)
+                    .requestMatchers("/api/auth/signup")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/changepass")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/empl/payment")
+                    .hasAnyRole("USER", "ACCOUNTANT")
+                    .requestMatchers(HttpMethod.POST, "/api/acct/payments")
+                    .hasRole("ACCOUNTANT")
+                    .requestMatchers(HttpMethod.PUT, "/api/acct/payments")
+                    .hasRole("ACCOUNTANT")
+                    .requestMatchers("/api/admin/**")
+                    .hasRole("ADMINISTRATOR")
+                    .requestMatchers("/api/security/**")
+                    .hasRole("AUDITOR")
+                    .anyRequest()
+                    .authenticated()
+            }.addFilterBefore(loginAuditFilter, BasicAuthenticationFilter::class.java)
 
         return http.build()
     }
-
 }

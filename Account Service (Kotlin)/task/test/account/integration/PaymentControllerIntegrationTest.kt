@@ -11,14 +11,16 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PaymentControllerIntegrationTest {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -28,41 +30,41 @@ class PaymentControllerIntegrationTest {
     @Autowired
     private lateinit var userRepository: UserRepository
 
-    private val signupUrl    = "/api/auth/signup"
-    private val paymentsUrl  = "/api/acct/payments"
-    private val paymentUrl   = "/api/empl/payment"
+    private val signupUrl = "/api/auth/signup"
+    private val paymentsUrl = "/api/acct/payments"
+    private val paymentUrl = "/api/empl/payment"
     private val adminRoleUrl = "/api/admin/user/role"
     private val validPassword = "ValidPass1234"
-    private val adminEmail    = "admin@acme.com"
-    private val adminPassword = "AdminPass1234"
-    private val userEmail     = "johndoe@acme.com"
+    private val adminEmail = "admin@acme.com"
+    private val johndoeEmail = "johndoe@acme.com"
 
     @BeforeEach
     fun setUp() {
         paymentRepository.deleteAll()
         userRepository.deleteAll()
 
-        // 1. Register admin (first user → ROLE_ADMINISTRATOR)
+        // First signup becomes ADMINISTRATOR
         mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"Admin","lastname":"User","email":"$adminEmail","password":"$adminPassword"}""")
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"name":"Admin","lastname":"Admin","email":"$adminEmail","password":"$validPassword"}"""),
         )
 
-        // 2. Register johndoe (second user → ROLE_USER)
+        // Second signup becomes USER
         mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"John","lastname":"Doe","email":"$userEmail","password":"$validPassword"}""")
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"name":"John","lastname":"Doe","email":"$johndoeEmail","password":"$validPassword"}"""),
         )
 
-        // 3. Grant ACCOUNTANT role so seeding via POST /api/acct/payments works
+        // Grant ACCOUNTANT role so johndoe can seed payment data
         mockMvc.perform(
-            put(adminRoleUrl).contentType(MediaType.APPLICATION_JSON)
-                .content("""{"user":"$userEmail","role":"ACCOUNTANT","operation":"GRANT"}""")
-                .with(httpBasic(adminEmail, adminPassword))
+            put(adminRoleUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"user":"$johndoeEmail","role":"ACCOUNTANT","operation":"GRANT"}""")
+                .with(httpBasic(adminEmail, validPassword)),
         )
     }
-
-    // ─── AUTH FAILURES (moved here from AuthControllerIntegrationTest) ─
 
     @Test
     fun `given no credentials when GET payment then returns 401`() {
@@ -80,9 +82,10 @@ class PaymentControllerIntegrationTest {
         // Arrange
 
         // Act
-        val result = mockMvc.perform(
-            get(paymentUrl).with(httpBasic("johndoe@acme.com", "wrongpassword"))
-        )
+        val result =
+            mockMvc.perform(
+                get(paymentUrl).with(httpBasic(johndoeEmail, "wrongpassword")),
+            )
 
         // Assert
         result.andExpect(status().isUnauthorized)
@@ -93,28 +96,32 @@ class PaymentControllerIntegrationTest {
         // Arrange
 
         // Act
-        val result = mockMvc.perform(
-            get(paymentUrl).with(httpBasic("nobody@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get(paymentUrl).with(httpBasic("nobody@acme.com", validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isUnauthorized)
     }
 
-    // ─── GET WITH PERIOD — SUCCESS ────────────────────────────────────
-
     @Test
     fun `given valid period with seeded payment when GET payment then returns 200 with formatted salary`() {
         // Arrange
-        val seed = """[{"employee":"johndoe@acme.com","period":"01-2021","salary":123456}]"""
-        mockMvc.perform(post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(userEmail, validPassword)))
+        val seed = """[{"employee":"$johndoeEmail","period":"01-2021","salary":123456}]"""
+        mockMvc.perform(
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(johndoeEmail, validPassword)),
+        )
 
         // Act
-        val result = mockMvc.perform(
-            get("$paymentUrl?period=01-2021")
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get("$paymentUrl?period=01-2021")
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -128,15 +135,20 @@ class PaymentControllerIntegrationTest {
     @Test
     fun `given salary with no cents when GET payment then formats as 0 cents`() {
         // Arrange — 100000 cents = 1000 dollars exactly
-        val seed = """[{"employee":"johndoe@acme.com","period":"06-2022","salary":100000}]"""
-        mockMvc.perform(post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(userEmail, validPassword)))
+        val seed = """[{"employee":"$johndoeEmail","period":"06-2022","salary":100000}]"""
+        mockMvc.perform(
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(johndoeEmail, validPassword)),
+        )
 
         // Act
-        val result = mockMvc.perform(
-            get("$paymentUrl?period=06-2022")
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get("$paymentUrl?period=06-2022")
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -150,10 +162,11 @@ class PaymentControllerIntegrationTest {
         // Arrange — no payment seeded for this period
 
         // Act
-        val result = mockMvc.perform(
-            get("$paymentUrl?period=01-2021")
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get("$paymentUrl?period=01-2021")
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert — 200 with empty object, not 404
         result.andExpect(status().isOk)
@@ -162,15 +175,20 @@ class PaymentControllerIntegrationTest {
     @Test
     fun `given valid period when GET payment then response does not contain password field`() {
         // Arrange
-        val seed = """[{"employee":"johndoe@acme.com","period":"01-2021","salary":123456}]"""
-        mockMvc.perform(post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(userEmail, validPassword)))
+        val seed = """[{"employee":"$johndoeEmail","period":"01-2021","salary":123456}]"""
+        mockMvc.perform(
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(johndoeEmail, validPassword)),
+        )
 
         // Act
-        val result = mockMvc.perform(
-            get("$paymentUrl?period=01-2021")
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get("$paymentUrl?period=01-2021")
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert — password must never appear in any salary response
         result
@@ -178,17 +196,16 @@ class PaymentControllerIntegrationTest {
             .andExpect(jsonPath("$.password").doesNotExist())
     }
 
-    // ─── GET WITH PERIOD — VALIDATION FAILURES ───────────────────────
-
     @Test
     fun `given period month 13 when GET payment then returns 400`() {
         // Arrange
 
         // Act
-        val result = mockMvc.perform(
-            get("$paymentUrl?period=13-2021")
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get("$paymentUrl?period=13-2021")
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -202,10 +219,11 @@ class PaymentControllerIntegrationTest {
         // Arrange
 
         // Act
-        val result = mockMvc.perform(
-            get("$paymentUrl?period=00-2021")
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get("$paymentUrl?period=00-2021")
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
@@ -216,26 +234,26 @@ class PaymentControllerIntegrationTest {
         // Arrange
 
         // Act
-        val result = mockMvc.perform(
-            get("$paymentUrl?period=1-2021")
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get("$paymentUrl?period=1-2021")
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
     }
-
-    // ─── GET WITHOUT PERIOD — SUCCESS ─────────────────────────────────
 
     @Test
     fun `given no period param with no records when GET payment then returns 200 empty array`() {
         // Arrange — no payments seeded
 
         // Act
-        val result = mockMvc.perform(
-            get(paymentUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get(paymentUrl)
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -248,18 +266,23 @@ class PaymentControllerIntegrationTest {
     fun `given no period param with three records when GET payment then returns sorted descending by date`() {
         // Arrange — seed three periods out of order
         val seed = """[
-            {"employee":"johndoe@acme.com","period":"01-2021","salary":100000},
-            {"employee":"johndoe@acme.com","period":"03-2021","salary":300000},
-            {"employee":"johndoe@acme.com","period":"02-2021","salary":200000}
+            {"employee":"$johndoeEmail","period":"01-2021","salary":100000},
+            {"employee":"$johndoeEmail","period":"03-2021","salary":300000},
+            {"employee":"$johndoeEmail","period":"02-2021","salary":200000}
         ]"""
-        mockMvc.perform(post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(userEmail, validPassword)))
+        mockMvc.perform(
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(johndoeEmail, validPassword)),
+        )
 
         // Act
-        val result = mockMvc.perform(
-            get(paymentUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get(paymentUrl)
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert — March, February, January (descending)
         result
@@ -275,18 +298,23 @@ class PaymentControllerIntegrationTest {
     fun `given no period param with records across two years when GET payment then later year comes first`() {
         // Arrange
         val seed = """[
-            {"employee":"johndoe@acme.com","period":"01-2021","salary":100000},
-            {"employee":"johndoe@acme.com","period":"01-2022","salary":200000},
-            {"employee":"johndoe@acme.com","period":"01-2020","salary":150000}
+            {"employee":"$johndoeEmail","period":"01-2021","salary":100000},
+            {"employee":"$johndoeEmail","period":"01-2022","salary":200000},
+            {"employee":"$johndoeEmail","period":"01-2020","salary":150000}
         ]"""
-        mockMvc.perform(post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(userEmail, validPassword)))
+        mockMvc.perform(
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(johndoeEmail, validPassword)),
+        )
 
         // Act
-        val result = mockMvc.perform(
-            get(paymentUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get(paymentUrl)
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert — 2022, 2021, 2020
         result
@@ -299,15 +327,20 @@ class PaymentControllerIntegrationTest {
     @Test
     fun `given no period param when GET payment then each item contains all four required fields`() {
         // Arrange
-        val seed = """[{"employee":"johndoe@acme.com","period":"01-2021","salary":123456}]"""
-        mockMvc.perform(post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(userEmail, validPassword)))
+        val seed = """[{"employee":"$johndoeEmail","period":"01-2021","salary":123456}]"""
+        mockMvc.perform(
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(johndoeEmail, validPassword)),
+        )
 
         // Act
-        val result = mockMvc.perform(
-            get(paymentUrl)
-                .with(httpBasic("johndoe@acme.com", validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                get(paymentUrl)
+                    .with(httpBasic(johndoeEmail, validPassword)),
+            )
 
         // Assert — name, lastname, period, salary all present; password absent
         result

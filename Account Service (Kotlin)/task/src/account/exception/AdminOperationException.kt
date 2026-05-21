@@ -1,3 +1,5 @@
 package account.exception
 
-class AdminOperationException(message: String) : RuntimeException(message)
+class AdminOperationException(
+    message: String,
+) : RuntimeException(message)
