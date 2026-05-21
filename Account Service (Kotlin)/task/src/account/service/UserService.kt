@@ -56,8 +56,6 @@ class UserService(
             throw UserExistException()
         }
 
-        validatePasswordSecurity(request.password!!)
-
         val isFirstUser = userRepository.count() == 0L
         val roleName = if (isFirstUser) "ROLE_ADMINISTRATOR" else "ROLE_USER"
         val role = getOrCreateRole(roleName)

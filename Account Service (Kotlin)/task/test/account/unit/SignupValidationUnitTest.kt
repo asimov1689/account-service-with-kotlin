@@ -14,11 +14,13 @@ class SignupValidationUnitTest {
 
     @BeforeEach
     fun setUp() {
+        // Arrange - shared setup for all tests
         controller = AuthController(mock(UserService::class.java))
     }
 
     @Test
     fun `given blank name when validating signup request then returns name error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "",
@@ -36,6 +38,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given null name when validating signup request then returns name error`() {
+
         // Arrange
         val request = SignupRequest(
             name = null,
@@ -53,6 +56,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given blank lastname when validating signup request then returns lastname error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -70,6 +74,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given null lastname when validating signup request then returns lastname error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -87,6 +92,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given blank email when validating signup request then returns email error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -104,6 +110,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given null email when validating signup request then returns email error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -121,6 +128,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given non acme email domain when validating signup request then returns domain error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -138,6 +146,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given email without at symbol when validating signup request then returns domain error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -155,6 +164,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given blank password when validating signup request then returns password error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -172,6 +182,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given null password when validating signup request then returns password error`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",
@@ -189,6 +200,7 @@ class SignupValidationUnitTest {
 
     @Test
     fun `given valid signup request when validating then returns no errors`() {
+
         // Arrange
         val request = SignupRequest(
             name = "John",

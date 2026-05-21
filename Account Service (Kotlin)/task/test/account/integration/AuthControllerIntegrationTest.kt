@@ -3,6 +3,7 @@ package account.integration
 import account.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthControllerIntegrationTest {
 
     @Autowired
@@ -41,7 +43,7 @@ class AuthControllerIntegrationTest {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoe@acme.com",
-                "password": "SecurePass123!"
+                "password": "secret"
             }
         """.trimIndent()
 
