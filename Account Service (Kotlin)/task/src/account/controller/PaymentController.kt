@@ -1,4 +1,3 @@
-// task/src/account/controller/PaymentController.kt
 package account.controller
 
 import account.dto.PaymentResponse
@@ -8,24 +7,25 @@ import account.service.PaymentService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/empl")
 class PaymentController(
     private val paymentService: PaymentService,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
-
     @GetMapping("/payment")
     fun getPayment(
         @RequestParam(required = false) period: String?,
-        @AuthenticationPrincipal userDetails: UserDetails
+        @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<Any> {
         val email = userDetails.username
 
         return if (period != null) {
-            // Validate period format
             if (!paymentService.isValidPeriod(period)) {
                 throw PaymentValidationException("Wrong date!")
             }
@@ -40,8 +40,8 @@ class PaymentController(
                         name = user.name,
                         lastname = user.lastname,
                         period = paymentService.formatPeriod(payment.period),
-                        salary = paymentService.formatSalary(payment.salary)
-                    )
+                        salary = paymentService.formatSalary(payment.salary),
+                    ),
                 )
             }
         } else {
@@ -56,9 +56,9 @@ class PaymentController(
                             name = user.name,
                             lastname = user.lastname,
                             period = paymentService.formatPeriod(p.period),
-                            salary = paymentService.formatSalary(p.salary)
+                            salary = paymentService.formatSalary(p.salary),
                         )
-                    }
+                    },
                 )
             }
         }

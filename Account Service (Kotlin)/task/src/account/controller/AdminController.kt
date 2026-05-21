@@ -1,9 +1,9 @@
 package account.controller
 
 import account.dto.RoleChangeRequest
+import account.dto.StatusResponse
 import account.dto.UserAccessRequest
 import account.dto.UserAdminResponse
-import account.dto.StatusResponse
 import account.service.AdminService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -19,31 +19,26 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/admin")
 class AdminController(
-    private val adminService: AdminService
+    private val adminService: AdminService,
 ) {
-
     @GetMapping("/user", "/user/")
-    fun getAllUsers(): ResponseEntity<List<UserAdminResponse>> =
-        ResponseEntity.ok(adminService.getAllUsers())
+    fun getAllUsers(): ResponseEntity<List<UserAdminResponse>> = ResponseEntity.ok(adminService.getAllUsers())
 
     @DeleteMapping("/user/{email}")
     fun deleteUser(
         @PathVariable email: String,
-        @AuthenticationPrincipal admin: UserDetails
-    ): ResponseEntity<Map<String, String>> =
-        ResponseEntity.ok(adminService.deleteUser(email, admin.username))
+        @AuthenticationPrincipal admin: UserDetails,
+    ): ResponseEntity<Map<String, String>> = ResponseEntity.ok(adminService.deleteUser(email, admin.username))
 
     @PutMapping("/user/role")
     fun changeRole(
         @RequestBody request: RoleChangeRequest,
-        @AuthenticationPrincipal admin: UserDetails
-    ): ResponseEntity<UserAdminResponse> =
-        ResponseEntity.ok(adminService.changeRole(request, admin.username))
+        @AuthenticationPrincipal admin: UserDetails,
+    ): ResponseEntity<UserAdminResponse> = ResponseEntity.ok(adminService.changeRole(request, admin.username))
 
     @PutMapping("/user/access")
     fun changeAccess(
         @RequestBody request: UserAccessRequest,
-        @AuthenticationPrincipal admin: UserDetails
-    ): ResponseEntity<StatusResponse> =
-        ResponseEntity.ok(adminService.changeAccess(request, admin.username))
+        @AuthenticationPrincipal admin: UserDetails,
+    ): ResponseEntity<StatusResponse> = ResponseEntity.ok(adminService.changeAccess(request, admin.username))
 }

@@ -13,20 +13,18 @@ import org.mockito.Mockito.mock
 import org.springframework.security.crypto.password.PasswordEncoder
 
 class PasswordSecurityUnitTest {
-
     private lateinit var userService: UserService
 
     @BeforeEach
     fun setUp() {
-        userService = UserService(
-            mock(UserRepository::class.java),
-            mock(RoleRepository::class.java),
-            mock(PasswordEncoder::class.java),
-            mock(SecurityEventService::class.java)
-        )
+        userService =
+            UserService(
+                mock(UserRepository::class.java),
+                mock(RoleRepository::class.java),
+                mock(PasswordEncoder::class.java),
+                mock(SecurityEventService::class.java),
+            )
     }
-
-    // ─── LENGTH CHECKS ───────────────────────────────────────────────
 
     @Test
     fun `given password shorter than 12 chars when validating then throws PasswordTooShortException`() {
@@ -59,8 +57,6 @@ class PasswordSecurityUnitTest {
         userService.validatePasswordSecurity(twelveChars)
     }
 
-    // ─── BREACHED PASSWORD CHECKS ────────────────────────────────────
-
     @Test
     fun `given breached password PasswordForJune when validating then throws BreachedPasswordException`() {
         // Arrange
@@ -75,11 +71,21 @@ class PasswordSecurityUnitTest {
     @Test
     fun `given all 12 breached passwords when validating then all throw BreachedPasswordException`() {
         // Arrange
-        val breachedPasswords = listOf(
-            "PasswordForJanuary", "PasswordForFebruary", "PasswordForMarch", "PasswordForApril",
-            "PasswordForMay", "PasswordForJune", "PasswordForJuly", "PasswordForAugust",
-            "PasswordForSeptember", "PasswordForOctober", "PasswordForNovember", "PasswordForDecember"
-        )
+        val breachedPasswords =
+            listOf(
+                "PasswordForJanuary",
+                "PasswordForFebruary",
+                "PasswordForMarch",
+                "PasswordForApril",
+                "PasswordForMay",
+                "PasswordForJune",
+                "PasswordForJuly",
+                "PasswordForAugust",
+                "PasswordForSeptember",
+                "PasswordForOctober",
+                "PasswordForNovember",
+                "PasswordForDecember",
+            )
 
         // Act & Assert
         breachedPasswords.forEach { password ->
@@ -88,8 +94,6 @@ class PasswordSecurityUnitTest {
             }
         }
     }
-
-    // ─── HAPPY PATH ──────────────────────────────────────────────────
 
     @Test
     fun `given valid password when validating then no exception thrown`() {
