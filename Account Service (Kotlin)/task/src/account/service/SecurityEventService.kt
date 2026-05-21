@@ -7,18 +7,22 @@ import java.time.LocalDate
 
 @Service
 class SecurityEventService(
-    private val securityEventRepository: SecurityEventRepository
+    private val securityEventRepository: SecurityEventRepository,
 ) {
-
-    fun log(action: String, subject: String, obj: String, path: String) {
+    fun log(
+        action: String,
+        subject: String,
+        obj: String,
+        path: String,
+    ) {
         securityEventRepository.save(
             SecurityEventEntity(
                 date = LocalDate.now(),
                 action = action,
                 subject = subject,
                 `object` = obj,
-                path = path
-            )
+                path = path,
+            ),
         )
     }
 }

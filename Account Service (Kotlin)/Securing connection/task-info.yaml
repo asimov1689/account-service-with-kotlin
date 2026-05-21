@@ -114,10 +114,25 @@ files:
   - name: test/account/integration/AdminControllerIntegrationTest.kt
     visible: true
     learner_created: false
+  - name: src/account/service/SecurityEventService.kt
+    visible: true
+    learner_created: true
+  - name: test/account/unit/SecurityEventServiceUnitTest.kt
+    visible: true
+    learner_created: true
+  - name: test/account/integration/SecurityControllerIntegrationTest.kt
+    visible: true
+    learner_created: true
+  - name: test/account/unit/SslKeystoreUnitTest.kt
+    visible: true
+    learner_created: true
+  - name: test/account/integration/SslIntegrationTest.kt
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1867/implement#comment
 status: Solved
 feedback:
   message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">Hyperskill</a>
     to continue learning.
-  time: "Thu, 21 May 2026 10:55:14 UTC"
+  time: "Thu, 21 May 2026 15:01:52 UTC"
 record: -1

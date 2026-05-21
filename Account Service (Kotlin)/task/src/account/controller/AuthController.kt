@@ -18,12 +18,13 @@ import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController(private val userService: UserService) {
-
+class AuthController(
+    private val userService: UserService,
+) {
     @PostMapping("/signup")
     fun signup(
         @RequestBody request: SignupRequest,
-        httpRequest: HttpServletRequest
+        httpRequest: HttpServletRequest,
     ): ResponseEntity<Any> {
         val errors = validate(request)
         if (errors.isNotEmpty()) {
@@ -33,9 +34,9 @@ class AuthController(private val userService: UserService) {
                     status = HttpStatus.BAD_REQUEST.value(),
                     error = "Bad Request",
                     message = errors.joinToString(", "),
-                    path = httpRequest.requestURI
+                    path = httpRequest.requestURI,
                 ),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
             )
         }
 
@@ -48,31 +49,32 @@ class AuthController(private val userService: UserService) {
     fun changePassword(
         @RequestBody request: ChangePassRequest,
         @AuthenticationPrincipal userDetails: UserDetails,
-        httpRequest: HttpServletRequest
+        httpRequest: HttpServletRequest,
     ): ResponseEntity<Any> {
-        if (request.new_password.isNullOrBlank()) {
+        if (request.newPassword.isNullOrBlank()) {
             return ResponseEntity(
                 ErrorResponse(
                     timestamp = LocalDateTime.now(),
                     status = HttpStatus.BAD_REQUEST.value(),
                     error = "Bad Request",
                     message = "Password must not be blank",
-                    path = httpRequest.requestURI
+                    path = httpRequest.requestURI,
                 ),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.BAD_REQUEST,
             )
         }
 
-        val updatedUser = userService.changePassword(
-            email = userDetails.username,
-            newPassword = request.new_password
-        )
+        val updatedUser =
+            userService.changePassword(
+                email = userDetails.username,
+                newPassword = request.newPassword,
+            )
 
         return ResponseEntity.ok(
             ChangePassResponse(
                 email = updatedUser.email,
-                status = "The password has been updated successfully"
-            )
+                status = "The password has been updated successfully",
+            ),
         )
     }
 

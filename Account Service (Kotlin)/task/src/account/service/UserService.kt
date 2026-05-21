@@ -1,13 +1,14 @@
 package account.service
 
+import account.dto.ChangePassResponse
 import account.dto.SignupRequest
 import account.dto.SignupResponse
 import account.entity.RoleEntity
 import account.entity.UserEntity
 import account.entity.sortedRoleNames
 import account.exception.BreachedPasswordException
-import account.exception.PasswordsIdenticalException
 import account.exception.PasswordTooShortException
+import account.exception.PasswordsIdenticalException
 import account.exception.UserExistException
 import account.exception.UserNotFoundException
 import account.repository.RoleRepository
@@ -25,23 +26,33 @@ class UserService(
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val securityEventService: SecurityEventService
+    private val securityEventService: SecurityEventService,
 ) : UserDetailsService {
-
     companion object {
-        private val BREACHED_PASSWORDS = setOf(
-            "PasswordForJanuary", "PasswordForFebruary", "PasswordForMarch",
-            "PasswordForApril", "PasswordForMay", "PasswordForJune",
-            "PasswordForJuly", "PasswordForAugust", "PasswordForSeptember",
-            "PasswordForOctober", "PasswordForNovember", "PasswordForDecember"
-        )
+        private val BREACHED_PASSWORDS =
+            setOf(
+                "PasswordForJanuary",
+                "PasswordForFebruary",
+                "PasswordForMarch",
+                "PasswordForApril",
+                "PasswordForMay",
+                "PasswordForJune",
+                "PasswordForJuly",
+                "PasswordForAugust",
+                "PasswordForSeptember",
+                "PasswordForOctober",
+                "PasswordForNovember",
+                "PasswordForDecember",
+            )
     }
 
     override fun loadUserByUsername(username: String): UserDetails {
-        val user = userRepository.findByEmail(username.lowercase())
-            ?: throw UsernameNotFoundException("User not found: $username")
+        val user =
+            userRepository.findByEmail(username.lowercase())
+                ?: throw UsernameNotFoundException("User not found: $username")
 
-        return User.builder()
+        return User
+            .builder()
             .username(user.email)
             .password(user.password)
             .authorities(user.roles.map { SimpleGrantedAuthority(it.name) })
@@ -60,12 +71,13 @@ class UserService(
         val roleName = if (isFirstUser) "ROLE_ADMINISTRATOR" else "ROLE_USER"
         val role = getOrCreateRole(roleName)
 
-        val user = UserEntity(
-            name = request.name!!,
-            lastname = request.lastname!!,
-            email = email,
-            password = passwordEncoder.encode(request.password)
-        )
+        val user =
+            UserEntity(
+                name = request.name!!,
+                lastname = request.lastname!!,
+                email = email,
+                password = passwordEncoder.encode(request.password),
+            )
         user.roles.add(role)
 
         val saved = userRepository.save(user)
@@ -74,7 +86,7 @@ class UserService(
             action = "CREATE_USER",
             subject = "Anonymous",
             obj = email,
-            path = "/api/auth/signup"
+            path = "/api/auth/signup",
         )
 
         return SignupResponse(
@@ -82,14 +94,17 @@ class UserService(
             name = saved.name,
             lastname = saved.lastname,
             email = saved.email,
-            roles = saved.sortedRoleNames()
+            roles = saved.sortedRoleNames(),
         )
     }
 
-
-    fun changePassword(email: String, newPassword: String): account.dto.ChangePassResponse {
-        val user = userRepository.findByEmail(email.lowercase())
-            ?: throw UserNotFoundException()
+    fun changePassword(
+        email: String,
+        newPassword: String,
+    ): ChangePassResponse {
+        val user =
+            userRepository.findByEmail(email.lowercase())
+                ?: throw UserNotFoundException()
 
         validatePasswordSecurity(newPassword)
 
@@ -104,16 +119,19 @@ class UserService(
             action = "CHANGE_PASSWORD",
             subject = email,
             obj = email,
-            path = "/api/auth/changepass"
+            path = "/api/auth/changepass",
         )
 
-        return account.dto.ChangePassResponse(
+        return ChangePassResponse(
             email = email,
-            status = "The password has been updated successfully"
+            status = "The password has been updated successfully",
         )
     }
 
-    fun incrementFailedLoginAttempts(email: String, path: String): Boolean {
+    fun incrementFailedLoginAttempts(
+        email: String,
+        path: String,
+    ): Boolean {
         val user = userRepository.findByEmail(email.lowercase()) ?: return false
         if (user.locked) return false
         if (user.roles.any { it.name == "ROLE_ADMINISTRATOR" }) return false
@@ -131,7 +149,6 @@ class UserService(
         }
     }
 
-
     fun resetFailedLoginAttempts(email: String) {
         val user = userRepository.findByEmail(email.lowercase()) ?: return
         if (user.failedLoginAttempts == 0) return
@@ -140,15 +157,17 @@ class UserService(
     }
 
     fun lockUser(email: String) {
-        val user = userRepository.findByEmail(email.lowercase())
-            ?: throw UserNotFoundException()
+        val user =
+            userRepository.findByEmail(email.lowercase())
+                ?: throw UserNotFoundException()
         user.locked = true
         userRepository.save(user)
     }
 
     fun unlockUser(email: String) {
-        val user = userRepository.findByEmail(email.lowercase())
-            ?: throw UserNotFoundException()
+        val user =
+            userRepository.findByEmail(email.lowercase())
+                ?: throw UserNotFoundException()
         user.locked = false
         user.failedLoginAttempts = 0
         userRepository.save(user)
@@ -163,6 +182,5 @@ class UserService(
         }
     }
 
-    fun getOrCreateRole(name: String): RoleEntity =
-        roleRepository.findByName(name) ?: roleRepository.save(RoleEntity(name = name))
+    fun getOrCreateRole(name: String): RoleEntity = roleRepository.findByName(name) ?: roleRepository.save(RoleEntity(name = name))
 }
