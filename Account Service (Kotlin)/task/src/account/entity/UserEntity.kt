@@ -1,5 +1,3 @@
-// src/main/kotlin/account/entity/UserEntity.kt
-
 package account.entity
 
 import account.dto.UserAdminResponse

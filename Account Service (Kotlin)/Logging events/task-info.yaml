@@ -114,6 +114,9 @@ files:
   - name: test/account/integration/AdminControllerIntegrationTest.kt
     visible: true
     learner_created: false
+  - name: docs/stage-006_code_summaries.md
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1866/implement#comment
 status: Solved
 feedback:
