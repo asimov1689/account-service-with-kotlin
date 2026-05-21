@@ -13,13 +13,12 @@ import java.util.Base64
 @Component
 class LoginAuditFilter(
     private val userService: UserService,
-    private val securityEventService: SecurityEventService
+    private val securityEventService: SecurityEventService,
 ) : OncePerRequestFilter() {
-
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        chain: FilterChain
+        chain: FilterChain,
     ) {
         chain.doFilter(request, response)
 
@@ -36,7 +35,7 @@ class LoginAuditFilter(
                     action = "LOGIN_FAILED",
                     subject = attemptedEmail,
                     obj = path,
-                    path = path
+                    path = path,
                 )
 
                 val justLocked = userService.incrementFailedLoginAttempts(attemptedEmail, path)
@@ -45,20 +44,23 @@ class LoginAuditFilter(
                         action = "BRUTE_FORCE",
                         subject = attemptedEmail,
                         obj = path,
-                        path = path
+                        path = path,
                     )
                     securityEventService.log(
                         action = "LOCK_USER",
                         subject = attemptedEmail,
                         obj = "Lock user $attemptedEmail",
-                        path = path
+                        path = path,
                     )
                 }
             }
 
             status in 200..299 -> {
-                val authenticatedEmail = SecurityContextHolder.getContext()
-                    .authentication?.name
+                val authenticatedEmail =
+                    SecurityContextHolder
+                        .getContext()
+                        .authentication
+                        ?.name
                 if (authenticatedEmail != null) {
                     userService.resetFailedLoginAttempts(authenticatedEmail)
                 }

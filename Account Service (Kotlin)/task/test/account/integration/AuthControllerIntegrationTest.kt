@@ -3,6 +3,7 @@ package account.integration
 import account.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,8 +18,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthControllerIntegrationTest {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -30,27 +31,26 @@ class AuthControllerIntegrationTest {
         userRepository.deleteAll()
     }
 
-    // ── valid request ──────────────────────────────────────────────────────
-
     @Test
     fun `given valid signup request when POST signup then returns 200 with user details`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoe@acme.com",
-                "password": "SecurePass123!"
+                "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -61,27 +61,26 @@ class AuthControllerIntegrationTest {
             .andExpect(jsonPath("$.password").doesNotExist())
     }
 
-    // ── name validation ────────────────────────────────────────────────────
-
     @Test
     fun `given blank name when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "",
                 "lastname": "Doe",
                 "email": "johndoe@acme.com",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -92,22 +91,23 @@ class AuthControllerIntegrationTest {
 
     @Test
     fun `given missing name when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "lastname": "Doe",
                 "email": "johndoe@acme.com",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -116,27 +116,26 @@ class AuthControllerIntegrationTest {
             .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
-    // ── lastname validation ────────────────────────────────────────────────
-
     @Test
     fun `given blank lastname when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "",
                 "email": "johndoe@acme.com",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -147,22 +146,23 @@ class AuthControllerIntegrationTest {
 
     @Test
     fun `given missing lastname when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "email": "johndoe@acme.com",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -171,27 +171,26 @@ class AuthControllerIntegrationTest {
             .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
-    // ── email validation ───────────────────────────────────────────────────
-
     @Test
     fun `given blank email when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -202,23 +201,24 @@ class AuthControllerIntegrationTest {
 
     @Test
     fun `given non acme email domain when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoe@google.com",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -229,23 +229,24 @@ class AuthControllerIntegrationTest {
 
     @Test
     fun `given email without at symbol when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoeacme.com",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -254,27 +255,26 @@ class AuthControllerIntegrationTest {
             .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
-    // ── password validation ────────────────────────────────────────────────
-
     @Test
     fun `given blank password when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoe@acme.com",
                 "password": ""
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -285,22 +285,23 @@ class AuthControllerIntegrationTest {
 
     @Test
     fun `given missing password when POST signup then returns 400 bad request`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoe@acme.com"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                post("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result
@@ -309,11 +310,8 @@ class AuthControllerIntegrationTest {
             .andExpect(jsonPath("$.error").value("Bad Request"))
     }
 
-    // ── HTTP method validation ─────────────────────────────────────────────
-
     @Test
     fun `given GET request when hitting signup endpoint then returns 405 method not allowed`() {
-
         // Arrange - GET has no body
 
         // Act
@@ -325,23 +323,24 @@ class AuthControllerIntegrationTest {
 
     @Test
     fun `given PUT request when hitting signup endpoint then returns 405 method not allowed`() {
-
         // Arrange
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "name": "John",
                 "lastname": "Doe",
                 "email": "johndoe@acme.com",
                 "password": "secret"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // Act
-        val result = mockMvc.perform(
-            put("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
-        )
+        val result =
+            mockMvc.perform(
+                put("/api/auth/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody),
+            )
 
         // Assert
         result.andExpect(status().isMethodNotAllowed)
@@ -349,7 +348,6 @@ class AuthControllerIntegrationTest {
 
     @Test
     fun `given DELETE request when hitting signup endpoint then returns 405 method not allowed`() {
-
         // Arrange - DELETE has no body
 
         // Act

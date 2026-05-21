@@ -13,14 +13,15 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountControllerIntegrationTest {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -30,41 +31,40 @@ class AccountControllerIntegrationTest {
     @Autowired
     private lateinit var userRepository: UserRepository
 
-    private val signupUrl      = "/api/auth/signup"
-    private val paymentsUrl    = "/api/acct/payments"
-    private val adminRoleUrl   = "/api/admin/user/role"
-    private val validPassword  = "ValidPass1234"
-    private val adminEmail     = "admin@acme.com"
-    private val adminPassword  = "AdminPass1234"
-    private val acctEmail      = "johndoe@acme.com"
+    private val signupUrl = "/api/auth/signup"
+    private val paymentsUrl = "/api/acct/payments"
+    private val adminRoleUrl = "/api/admin/user/role"
+    private val validPassword = "ValidPass1234"
+    private val adminEmail = "admin@acme.com"
+    private val acctEmail = "johndoe@acme.com"
 
     @BeforeEach
     fun setUp() {
-        // Clean both tables — payments before users (FK dependency)
         paymentRepository.deleteAll()
         userRepository.deleteAll()
 
-        // 1. Register admin (first user → ROLE_ADMINISTRATOR)
+        // First signup becomes ADMINISTRATOR
         mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"Admin","lastname":"User","email":"$adminEmail","password":"$adminPassword"}""")
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"name":"Admin","lastname":"Admin","email":"$adminEmail","password":"$validPassword"}"""),
         )
 
-        // 2. Register johndoe (second user → ROLE_USER)
+        // Second signup becomes USER
         mockMvc.perform(
-            post(signupUrl).contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"John","lastname":"Doe","email":"$acctEmail","password":"$validPassword"}""")
+            post(signupUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"name":"John","lastname":"Doe","email":"$acctEmail","password":"$validPassword"}"""),
         )
 
-        // 3. Grant ACCOUNTANT role so payment endpoints are accessible
+        // Grant ACCOUNTANT role so johndoe can manage payments
         mockMvc.perform(
-            put(adminRoleUrl).contentType(MediaType.APPLICATION_JSON)
+            put(adminRoleUrl)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"user":"$acctEmail","role":"ACCOUNTANT","operation":"GRANT"}""")
-                .with(httpBasic(adminEmail, adminPassword))
+                .with(httpBasic(adminEmail, validPassword)),
         )
     }
-
-    // ─── POST PAYMENTS — SUCCESS ──────────────────────────────────────
 
     @Test
     fun `given valid single payment when POST payments then returns 200 with added status`() {
@@ -72,12 +72,13 @@ class AccountControllerIntegrationTest {
         val body = """[{"employee":"$acctEmail","period":"01-2021","salary":123456}]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -95,12 +96,13 @@ class AccountControllerIntegrationTest {
         ]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -109,22 +111,19 @@ class AccountControllerIntegrationTest {
     }
 
     @Test
-    fun `given unauthenticated request when POST payments then returns 401`() {
+    fun `given no credentials when POST payments then returns 401`() {
         // Arrange
         val body = """[{"employee":"$acctEmail","period":"01-2021","salary":100000}]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(body),
+            )
 
         // Assert
         result.andExpect(status().isUnauthorized)
     }
-
-    // ─── POST PAYMENTS — FIELD VALIDATION FAILURES ───────────────────
 
     @Test
     fun `given negative salary when POST payments then returns 400`() {
@@ -132,12 +131,13 @@ class AccountControllerIntegrationTest {
         val body = """[{"employee":"$acctEmail","period":"01-2021","salary":-1}]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -153,12 +153,13 @@ class AccountControllerIntegrationTest {
         val body = """[{"employee":"$acctEmail","period":"13-2021","salary":100000}]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -172,12 +173,13 @@ class AccountControllerIntegrationTest {
         val body = """[{"employee":"$acctEmail","period":"00-2021","salary":100000}]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
@@ -193,25 +195,20 @@ class AccountControllerIntegrationTest {
         ]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value(
-                org.hamcrest.Matchers.containsString("payments[0].salary")
-            ))
-            .andExpect(jsonPath("$.message").value(
-                org.hamcrest.Matchers.containsString("payments[1].period")
-            ))
+            .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("payments[0].salary")))
+            .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("payments[1].period")))
     }
-
-    // ─── POST PAYMENTS — BUSINESS RULE FAILURES ──────────────────────
 
     @Test
     fun `given duplicate employee-period pair within same batch when POST payments then returns 400`() {
@@ -222,12 +219,13 @@ class AccountControllerIntegrationTest {
         ]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -237,20 +235,23 @@ class AccountControllerIntegrationTest {
 
     @Test
     fun `given employee-period already in DB when POST payments then returns 400`() {
-        // Arrange — seed the record first
+        // Arrange
         val body = """[{"employee":"$acctEmail","period":"01-2021","salary":100000}]"""
         mockMvc.perform(
-            post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
-
-        // Act — attempt to add the same period again
-        val result = mockMvc.perform(
             post(paymentsUrl)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
-                .with(httpBasic(acctEmail, validPassword))
+                .with(httpBasic(acctEmail, validPassword)),
         )
+
+        // Act
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
@@ -262,18 +263,17 @@ class AccountControllerIntegrationTest {
         val body = """[{"employee":"ghost@acme.com","period":"01-2021","salary":100000}]"""
 
         // Act
-        val result = mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
     }
-
-    // ─── POST PAYMENTS — TRANSACTIONAL ROLLBACK ───────────────────────
 
     @Test
     fun `given batch with one invalid item when POST payments then rolls back and saves nothing`() {
@@ -284,37 +284,39 @@ class AccountControllerIntegrationTest {
         ]"""
 
         // Act
-        mockMvc.perform(
-            post(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        ).andExpect(status().isBadRequest)
+        mockMvc
+            .perform(
+                post(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            ).andExpect(status().isBadRequest)
 
-        // Assert — nothing persisted
+        // Assert
         val saved = paymentRepository.findByEmployee(acctEmail)
         assertTrue(saved.isEmpty())
     }
 
-    // ─── PUT PAYMENTS — SUCCESS ───────────────────────────────────────
-
     @Test
     fun `given existing payment when PUT payments then returns 200 with updated status`() {
-        // Arrange — seed the record
+        // Arrange
         val seed = """[{"employee":"$acctEmail","period":"01-2021","salary":100000}]"""
         mockMvc.perform(
-            post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(acctEmail, validPassword))
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(acctEmail, validPassword)),
         )
         val body = """{"employee":"$acctEmail","period":"01-2021","salary":999999}"""
 
         // Act
-        val result = mockMvc.perform(
-            put(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                put(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result
@@ -324,16 +326,20 @@ class AccountControllerIntegrationTest {
 
     @Test
     fun `given salary update when PUT payments then new salary is persisted in DB`() {
-        // Arrange — seed, then update
+        // Arrange
         val seed = """[{"employee":"$acctEmail","period":"01-2021","salary":100000}]"""
         mockMvc.perform(
-            post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(acctEmail, validPassword))
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(acctEmail, validPassword)),
         )
         val body = """{"employee":"$acctEmail","period":"01-2021","salary":999999}"""
         mockMvc.perform(
-            put(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(body)
-                .with(httpBasic(acctEmail, validPassword))
+            put(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .with(httpBasic(acctEmail, validPassword)),
         )
 
         // Act
@@ -344,27 +350,26 @@ class AccountControllerIntegrationTest {
     }
 
     @Test
-    fun `given unauthenticated request when PUT payments then returns 401`() {
-        // Arrange — seed a record so the endpoint would otherwise succeed
+    fun `given no credentials when PUT payments then returns 401`() {
+        // Arrange
         val seed = """[{"employee":"$acctEmail","period":"01-2021","salary":100000}]"""
         mockMvc.perform(
-            post(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(seed)
-                .with(httpBasic(acctEmail, validPassword))
+            post(paymentsUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(seed)
+                .with(httpBasic(acctEmail, validPassword)),
         )
         val body = """{"employee":"$acctEmail","period":"01-2021","salary":200000}"""
 
         // Act
-        val result = mockMvc.perform(
-            put(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-        )
+        val result =
+            mockMvc.perform(
+                put(paymentsUrl).contentType(MediaType.APPLICATION_JSON).content(body),
+            )
 
         // Assert
         result.andExpect(status().isUnauthorized)
     }
-
-    // ─── PUT PAYMENTS — VALIDATION FAILURES ──────────────────────────
 
     @Test
     fun `given negative salary when PUT payments then returns 400`() {
@@ -372,12 +377,13 @@ class AccountControllerIntegrationTest {
         val body = """{"employee":"$acctEmail","period":"01-2021","salary":-1}"""
 
         // Act
-        val result = mockMvc.perform(
-            put(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                put(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
@@ -389,12 +395,13 @@ class AccountControllerIntegrationTest {
         val body = """{"employee":"$acctEmail","period":"13-2021","salary":100000}"""
 
         // Act
-        val result = mockMvc.perform(
-            put(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                put(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
@@ -406,12 +413,13 @@ class AccountControllerIntegrationTest {
         val body = """{"employee":"ghost@acme.com","period":"01-2021","salary":100000}"""
 
         // Act
-        val result = mockMvc.perform(
-            put(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                put(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)
@@ -419,16 +427,17 @@ class AccountControllerIntegrationTest {
 
     @Test
     fun `given period not seeded in DB when PUT payments then returns 400`() {
-        // Arrange — no payment record exists for this period
+        // Arrange
         val body = """{"employee":"$acctEmail","period":"01-2021","salary":100000}"""
 
         // Act
-        val result = mockMvc.perform(
-            put(paymentsUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body)
-                .with(httpBasic(acctEmail, validPassword))
-        )
+        val result =
+            mockMvc.perform(
+                put(paymentsUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .with(httpBasic(acctEmail, validPassword)),
+            )
 
         // Assert
         result.andExpect(status().isBadRequest)

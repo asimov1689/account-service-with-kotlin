@@ -9,10 +9,8 @@ import jakarta.persistence.Table
 @Entity
 @Table(name = "roles")
 data class RoleEntity(
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     val id: Long = 0,
-
-    val name: String
+    val name: String,
 )
