@@ -129,6 +129,9 @@ files:
   - name: test/account/integration/SslIntegrationTest.kt
     visible: true
     learner_created: true
+  - name: docs/project_summary.md
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/332/stages/1867/implement#comment
 status: Solved
 feedback:
