@@ -1,8 +1,87 @@
-.gradle/
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Build
 build/
 out/
-*.class
+dist/
+target/
 
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin
+*.kexe
+*.kt.bak
+*.kotlin_module
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Databases
+*.db
+*.mv.db
+*.trace.db
+*.log
+
+# OS
 .DS_Store
-*.iml
-.idea/
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# AI-generated summaries
+*_code_summaries.md
+
+# Sensitive files (NEVER commit these)
+*.env
+.env
+.env.local
+.env.*.local
+application-local.properties
+application-prod.properties
+*.key
+*.pem
+secrets/
+private/
+credentials.json
+
+# Test coverage
+coverage/
+jacoco.xml
+
+# Temporary files
+*.tmp
+*.temp
+.project
+.classpath
+.ai/
+Account Service (Kotlin)/The authentication/task-info.yaml
+Account Service (Kotlin)/task/docs/
